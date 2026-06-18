@@ -82,6 +82,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Watch free live TV channels from Bangladesh and around the world on Dtv." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "Dtv — Free Live TV Streaming" },
+      { name: "twitter:title", content: "Dtv — Free Live TV Streaming" },
+      { property: "og:description", content: "Watch free live TV channels from Bangladesh and around the world on Dtv." },
+      { name: "twitter:description", content: "Watch free live TV channels from Bangladesh and around the world on Dtv." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/bfd1481f-66ef-4639-92a7-614a3c175c4a/id-preview-b125a888--bee5dcc9-7708-4f89-b82d-fc203355ea05.lovable.app-1781770023611.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/bfd1481f-66ef-4639-92a7-614a3c175c4a/id-preview-b125a888--bee5dcc9-7708-4f89-b82d-fc203355ea05.lovable.app-1781770023611.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
