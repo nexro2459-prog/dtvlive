@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { channels, categories } from "@/lib/channels";
-import { EMBED_SERVERS, buildEmbedUrl } from "@/lib/embeds";
+import { EMBED_SERVERS, buildEmbedUrl, useChannelEmbeds } from "@/lib/embeds";
 import { useFavorites } from "@/lib/favorites";
 import { SiteHeader } from "@/components/SiteHeader";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import { Heart, Play } from "lucide-react";
+import { Heart, Play, Link2, X } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
