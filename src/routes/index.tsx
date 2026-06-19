@@ -144,6 +144,67 @@ function Home() {
                   );
                 })}
               </div>
+
+              <div className="mt-3">
+                {showEmbedInput ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      type="url"
+                      value={embedDraft}
+                      onChange={(e) => setEmbedDraft(e.target.value)}
+                      placeholder="https://your-host.com/embed/channel-id"
+                      className="min-w-0 flex-1 rounded-lg border border-border bg-card/60 px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:border-[oklch(0.7_0.18_290/0.7)] focus:outline-none"
+                    />
+                    <button
+                      onClick={() => {
+                        const v = embedDraft.trim();
+                        if (!v) return;
+                        embeds.set(current.id, v);
+                        setShowEmbedInput(false);
+                        setEmbedDraft("");
+                        setServerIdx(current.streams.length + EMBED_SERVERS.length);
+                      }}
+                      className="rounded-lg bg-gradient-to-r from-[oklch(0.65_0.22_290)] to-[oklch(0.7_0.18_220)] px-3 py-1.5 text-xs font-medium text-white"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowEmbedInput(false);
+                        setEmbedDraft("");
+                      }}
+                      className="rounded-lg border border-border bg-card/60 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setEmbedDraft(customEmbed ?? "");
+                        setShowEmbedInput(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border bg-card/40 px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:border-[oklch(0.7_0.18_290/0.6)] hover:text-foreground"
+                    >
+                      <Link2 className="h-3 w-3" />
+                      {customEmbed ? "Edit iframe embed URL" : "Add iframe embed URL"}
+                    </button>
+                    {customEmbed && (
+                      <button
+                        onClick={() => {
+                          embeds.remove(current.id);
+                          setServerIdx(0);
+                        }}
+                        className="inline-flex items-center gap-1 rounded-lg border border-border bg-card/40 px-2.5 py-1.5 text-[11px] text-muted-foreground hover:text-red-400"
+                        title="Remove embed"
+                      >
+                        <X className="h-3 w-3" /> Clear
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
