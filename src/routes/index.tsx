@@ -92,9 +92,9 @@ function Home() {
           {/* Player column */}
           <div className="lg:sticky lg:top-20 lg:self-start">
             <VideoPlayer
-              src={servers[safeIdx].url}
+              src={currentServer.url}
               poster={current.logo}
-              type={useIframe ? "iframe" : "hls"}
+              type={currentServer.type}
             />
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
