@@ -5,15 +5,19 @@ import { Loader2, AlertTriangle, RotateCw } from "lucide-react";
 interface Props {
   src: string;
   poster?: string;
+  type?: "hls" | "iframe";
 }
 
-export function VideoPlayer({ src, poster }: Props) {
+export function VideoPlayer({ src, poster, type = "hls" }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
 
+  const isIframe = type === "iframe";
+
   useEffect(() => {
+    if (isIframe) return;
     const video = videoRef.current;
     if (!video) return;
     setLoading(true);
@@ -50,20 +54,41 @@ export function VideoPlayer({ src, poster }: Props) {
       if (hls) hls.destroy();
       video.removeEventListener("loadeddata", onReady);
     };
-  }, [src, retryKey]);
+  }, [src, retryKey, isIframe]);
+
+  // Iframe mode: reset loading on src change
+  useEffect(() => {
+    if (!isIframe) return;
+    setLoading(true);
+    setError(null);
+    const t = setTimeout(() => setLoading(false), 1500);
+    return () => clearTimeout(t);
+  }, [src, retryKey, isIframe]);
 
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-black shadow-[0_0_60px_-15px_rgba(139,92,246,0.5)]">
-      <video
-        key={retryKey}
-        ref={videoRef}
-        className="h-full w-full"
-        controls
-        playsInline
-        muted
-        autoPlay
-        poster={poster}
-      />
+      {isIframe ? (
+        <iframe
+          key={`${src}-${retryKey}`}
+          src={src}
+          className="h-full w-full border-0"
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          allowFullScreen
+          referrerPolicy="no-referrer"
+          onLoad={() => setLoading(false)}
+        />
+      ) : (
+        <video
+          key={retryKey}
+          ref={videoRef}
+          className="h-full w-full"
+          controls
+          playsInline
+          muted
+          autoPlay
+          poster={poster}
+        />
+      )}
       {loading && !error && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <Loader2 className="h-12 w-12 animate-spin text-[oklch(0.7_0.18_280)]" />
