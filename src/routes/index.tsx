@@ -33,6 +33,9 @@ function Home() {
   const [currentId, setCurrentId] = useState<string>(channels[0].id);
   const [serverIdx, setServerIdx] = useState(0);
   const { favs, isFav, toggle } = useFavorites();
+  const embeds = useChannelEmbeds();
+  const [showEmbedInput, setShowEmbedInput] = useState(false);
+  const [embedDraft, setEmbedDraft] = useState("");
 
   const filtered = useMemo(() => {
     return channels.filter((c) => {
@@ -49,19 +52,26 @@ function Home() {
 
   const current = channels.find((c) => c.id === currentId) ?? channels[0];
 
-  // Prefer iframe embeds when EMBED_SERVERS are configured; fall back to HLS.
-  const useIframe = EMBED_SERVERS.length > 0;
+  // Build server list: HLS streams + global embed hosts + per-channel custom embed.
+  const customEmbed = embeds.get(current.id);
   const slug = current.embedSlug ?? current.id;
-  const servers: { url: string; label: string }[] = useIframe
-    ? EMBED_SERVERS.map((s, i) => ({
-        url: buildEmbedUrl(s.base, slug),
-        label: s.name || `Server ${i + 1}`,
-      }))
-    : Array.from({ length: Math.max(4, current.streams.length) }, (_, i) => ({
-        url: current.streams[i] ?? current.streams[0],
-        label: `Server ${i + 1}`,
-      }));
+  const servers: { url: string; label: string; type: "hls" | "iframe" }[] = [
+    ...current.streams.map((u, i) => ({
+      url: u,
+      label: `Server ${i + 1}`,
+      type: "hls" as const,
+    })),
+    ...EMBED_SERVERS.map((s, i) => ({
+      url: buildEmbedUrl(s.base, slug),
+      label: s.name || `Embed ${i + 1}`,
+      type: "iframe" as const,
+    })),
+    ...(customEmbed
+      ? [{ url: customEmbed, label: "Embed", type: "iframe" as const }]
+      : []),
+  ];
   const safeIdx = Math.min(serverIdx, servers.length - 1);
+  const currentServer = servers[safeIdx];
 
   const tabs = ["All", ...categories.filter((c) => c !== "All"), "Favorites"];
 
