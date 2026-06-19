@@ -4,6 +4,8 @@ export interface Channel {
   category: string;
   logo: string;
   streams: string[];
+  /** Slug appended to each EMBED_SERVERS base when using iframe mode. Defaults to `id`. */
+  embedSlug?: string;
   type?: "hls" | "iframe";
 }
 

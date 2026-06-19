@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { channels, categories } from "@/lib/channels";
+import { EMBED_SERVERS, buildEmbedUrl } from "@/lib/embeds";
 import { useFavorites } from "@/lib/favorites";
 import { SiteHeader } from "@/components/SiteHeader";
 import { VideoPlayer } from "@/components/VideoPlayer";
@@ -47,10 +48,20 @@ function Home() {
   }, [search, cat, favs]);
 
   const current = channels.find((c) => c.id === currentId) ?? channels[0];
-  const servers = Array.from(
-    { length: Math.max(4, current.streams.length) },
-    (_, i) => current.streams[i] ?? current.streams[0],
-  );
+
+  // Prefer iframe embeds when EMBED_SERVERS are configured; fall back to HLS.
+  const useIframe = EMBED_SERVERS.length > 0;
+  const slug = current.embedSlug ?? current.id;
+  const servers: { url: string; label: string }[] = useIframe
+    ? EMBED_SERVERS.map((s, i) => ({
+        url: buildEmbedUrl(s.base, slug),
+        label: s.name || `Server ${i + 1}`,
+      }))
+    : Array.from({ length: Math.max(4, current.streams.length) }, (_, i) => ({
+        url: current.streams[i] ?? current.streams[0],
+        label: `Server ${i + 1}`,
+      }));
+  const safeIdx = Math.min(serverIdx, servers.length - 1);
 
   const tabs = ["All", ...categories.filter((c) => c !== "All"), "Favorites"];
 
@@ -70,7 +81,11 @@ function Home() {
         <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
           {/* Player column */}
           <div className="lg:sticky lg:top-20 lg:self-start">
-            <VideoPlayer src={servers[serverIdx]} poster={current.logo} />
+            <VideoPlayer
+              src={servers[safeIdx].url}
+              poster={current.logo}
+              type={useIframe ? "iframe" : "hls"}
+            />
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <h1 className="text-xl font-bold text-foreground sm:text-2xl">
@@ -102,8 +117,8 @@ function Home() {
                 Change Server
               </p>
               <div className="flex flex-wrap gap-2">
-                {servers.slice(0, 4).map((_, i) => {
-                  const active = i === serverIdx;
+                {servers.map((s, i) => {
+                  const active = i === safeIdx;
                   return (
                     <button
                       key={i}
@@ -114,7 +129,7 @@ function Home() {
                           : "border-border bg-card/60 text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      Server {i + 1}
+                      {s.label}
                     </button>
                   );
                 })}
