@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { channels, categories } from "@/lib/channels";
-import { EMBED_SERVERS, buildEmbedUrl } from "@/lib/embeds";
+import { EMBED_SERVERS, buildEmbedUrl, useChannelEmbeds } from "@/lib/embeds";
 import { useFavorites } from "@/lib/favorites";
 import { SiteHeader } from "@/components/SiteHeader";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import { Heart, Play } from "lucide-react";
+import { Heart, Play, Link2, X } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -33,6 +33,9 @@ function Home() {
   const [currentId, setCurrentId] = useState<string>(channels[0].id);
   const [serverIdx, setServerIdx] = useState(0);
   const { favs, isFav, toggle } = useFavorites();
+  const embeds = useChannelEmbeds();
+  const [showEmbedInput, setShowEmbedInput] = useState(false);
+  const [embedDraft, setEmbedDraft] = useState("");
 
   const filtered = useMemo(() => {
     return channels.filter((c) => {
@@ -49,19 +52,26 @@ function Home() {
 
   const current = channels.find((c) => c.id === currentId) ?? channels[0];
 
-  // Prefer iframe embeds when EMBED_SERVERS are configured; fall back to HLS.
-  const useIframe = EMBED_SERVERS.length > 0;
+  // Build server list: HLS streams + global embed hosts + per-channel custom embed.
+  const customEmbed = embeds.get(current.id);
   const slug = current.embedSlug ?? current.id;
-  const servers: { url: string; label: string }[] = useIframe
-    ? EMBED_SERVERS.map((s, i) => ({
-        url: buildEmbedUrl(s.base, slug),
-        label: s.name || `Server ${i + 1}`,
-      }))
-    : Array.from({ length: Math.max(4, current.streams.length) }, (_, i) => ({
-        url: current.streams[i] ?? current.streams[0],
-        label: `Server ${i + 1}`,
-      }));
+  const servers: { url: string; label: string; type: "hls" | "iframe" }[] = [
+    ...current.streams.map((u, i) => ({
+      url: u,
+      label: `Server ${i + 1}`,
+      type: "hls" as const,
+    })),
+    ...EMBED_SERVERS.map((s, i) => ({
+      url: buildEmbedUrl(s.base, slug),
+      label: s.name || `Embed ${i + 1}`,
+      type: "iframe" as const,
+    })),
+    ...(customEmbed
+      ? [{ url: customEmbed, label: "Embed", type: "iframe" as const }]
+      : []),
+  ];
   const safeIdx = Math.min(serverIdx, servers.length - 1);
+  const currentServer = servers[safeIdx];
 
   const tabs = ["All", ...categories.filter((c) => c !== "All"), "Favorites"];
 
@@ -82,9 +92,9 @@ function Home() {
           {/* Player column */}
           <div className="lg:sticky lg:top-20 lg:self-start">
             <VideoPlayer
-              src={servers[safeIdx].url}
+              src={currentServer.url}
               poster={current.logo}
-              type={useIframe ? "iframe" : "hls"}
+              type={currentServer.type}
             />
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -133,6 +143,67 @@ function Home() {
                     </button>
                   );
                 })}
+              </div>
+
+              <div className="mt-3">
+                {showEmbedInput ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      type="url"
+                      value={embedDraft}
+                      onChange={(e) => setEmbedDraft(e.target.value)}
+                      placeholder="https://your-host.com/embed/channel-id"
+                      className="min-w-0 flex-1 rounded-lg border border-border bg-card/60 px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:border-[oklch(0.7_0.18_290/0.7)] focus:outline-none"
+                    />
+                    <button
+                      onClick={() => {
+                        const v = embedDraft.trim();
+                        if (!v) return;
+                        embeds.set(current.id, v);
+                        setShowEmbedInput(false);
+                        setEmbedDraft("");
+                        setServerIdx(current.streams.length + EMBED_SERVERS.length);
+                      }}
+                      className="rounded-lg bg-gradient-to-r from-[oklch(0.65_0.22_290)] to-[oklch(0.7_0.18_220)] px-3 py-1.5 text-xs font-medium text-white"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowEmbedInput(false);
+                        setEmbedDraft("");
+                      }}
+                      className="rounded-lg border border-border bg-card/60 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setEmbedDraft(customEmbed ?? "");
+                        setShowEmbedInput(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-border bg-card/40 px-3 py-1.5 text-[11px] font-medium text-muted-foreground transition hover:border-[oklch(0.7_0.18_290/0.6)] hover:text-foreground"
+                    >
+                      <Link2 className="h-3 w-3" />
+                      {customEmbed ? "Edit iframe embed URL" : "Add iframe embed URL"}
+                    </button>
+                    {customEmbed && (
+                      <button
+                        onClick={() => {
+                          embeds.remove(current.id);
+                          setServerIdx(0);
+                        }}
+                        className="inline-flex items-center gap-1 rounded-lg border border-border bg-card/40 px-2.5 py-1.5 text-[11px] text-muted-foreground hover:text-red-400"
+                        title="Remove embed"
+                      >
+                        <X className="h-3 w-3" /> Clear
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
