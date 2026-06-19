@@ -1,78 +1,46 @@
+// Auto-extracted from telezo.lovable.app + vibestream.ntechbd.app live stream sources.
 export interface Channel {
   id: string;
   name: string;
   category: string;
   logo: string;
   streams: string[];
-  /** Slug appended to each EMBED_SERVERS base when using iframe mode. Defaults to `id`. */
   embedSlug?: string;
   type?: "hls" | "iframe";
 }
 
-// Public iptv-org streams. Some may be region-locked; player has fallback UI.
 export const channels: Channel[] = [
-  // Bangladesh
-  { id: "atn-bangla", name: "ATN Bangla", category: "Entertainment", logo: "https://i.imgur.com/4dq4hZb.png", streams: ["https://atnbangla.akamaized.net/hls/live/2042970/atnbangla/master.m3u8"] },
-  { id: "channel-i", name: "Channel i", category: "Entertainment", logo: "https://i.imgur.com/9z1qz8H.png", streams: ["https://channeli-live.akamaized.net/hls/live/2042697/channeli/master.m3u8"] },
-  { id: "ntv", name: "NTV", category: "Entertainment", logo: "https://i.imgur.com/tF3Q2xQ.png", streams: ["https://ntvbd-live.akamaized.net/hls/live/2003421/ntvbd/master.m3u8"] },
-  { id: "rtv", name: "RTV", category: "Entertainment", logo: "https://i.imgur.com/yEepF5Z.png", streams: ["https://rtvlive.akamaized.net/hls/live/2014239/rtvlive/master.m3u8"] },
-  { id: "boishakhi", name: "Boishakhi TV", category: "Entertainment", logo: "https://i.imgur.com/3JKQy7K.png", streams: ["https://boishakhitv-live.akamaized.net/hls/live/boishakhi/master.m3u8"] },
-  { id: "maasranga", name: "Maasranga TV", category: "Entertainment", logo: "https://i.imgur.com/UQ2xR5E.png", streams: ["https://maasranga-live.akamaized.net/hls/live/2042722/maasranga/master.m3u8"] },
-  { id: "desh-tv", name: "Desh TV", category: "Entertainment", logo: "https://i.imgur.com/H8jYqLO.png", streams: ["https://deshtv-live.akamaized.net/hls/live/deshtv/master.m3u8"] },
-  { id: "somoy", name: "Somoy TV", category: "News", logo: "https://i.imgur.com/V3D2qg7.png", streams: ["https://somoynews.akamaized.net/hls/live/2020946/Live_1/index.m3u8"] },
-  { id: "independent", name: "Independent TV", category: "News", logo: "https://i.imgur.com/lq8sN5F.png", streams: ["https://itvbdlive.akamaized.net/hls/live/2009183/itvbd/master.m3u8"] },
-  { id: "news24", name: "News24", category: "News", logo: "https://i.imgur.com/qH7nT3y.png", streams: ["https://news24bd.akamaized.net/hls/live/news24bd/master.m3u8"] },
-  { id: "jamuna", name: "Jamuna TV", category: "News", logo: "https://i.imgur.com/zNQjW3x.png", streams: ["https://jagobdlive.akamaized.net/hls/live/2042672/jamunatv/master.m3u8"] },
-  { id: "ekattor", name: "Ekattor TV", category: "News", logo: "https://i.imgur.com/W8X2T0c.png", streams: ["https://ekattor.akamaized.net/hls/live/ekattor/master.m3u8"] },
-  { id: "sa-tv", name: "SA TV", category: "Entertainment", logo: "https://i.imgur.com/5pY9F1n.png", streams: ["https://satvlive.akamaized.net/hls/live/satv/master.m3u8"] },
-  { id: "gazi", name: "Gazi TV", category: "Sports", logo: "https://i.imgur.com/cP3F8E2.png", streams: ["https://gtvlive.akamaized.net/hls/live/gtv/master.m3u8"] },
-  { id: "btv", name: "BTV", category: "Entertainment", logo: "https://i.imgur.com/QkpYwL2.png", streams: ["https://btv-live.akamaized.net/hls/live/btv/master.m3u8"] },
-  { id: "channel-9", name: "Channel 9", category: "Entertainment", logo: "https://i.imgur.com/aJZ5kE6.png", streams: ["https://channel9.akamaized.net/hls/live/channel9/master.m3u8"] },
-  { id: "deepto", name: "Deepto TV", category: "Entertainment", logo: "https://i.imgur.com/H4j3QzY.png", streams: ["https://deepto.akamaized.net/hls/live/deepto/master.m3u8"] },
-  { id: "my-tv", name: "My TV", category: "Entertainment", logo: "https://i.imgur.com/wYqV3xF.png", streams: ["https://mytv.akamaized.net/hls/live/mytv/master.m3u8"] },
-
-  // Sports
-  { id: "t-sports", name: "T Sports", category: "Sports", logo: "https://i.imgur.com/4Z5y8wP.png", streams: ["https://tsportslive.akamaized.net/hls/live/tsports/master.m3u8"] },
-  { id: "star-sports-1", name: "Star Sports 1", category: "Sports", logo: "https://i.imgur.com/MqJ7vXk.png", streams: ["https://starsports1.akamaized.net/hls/live/starsports1/master.m3u8"] },
-  { id: "star-sports-2", name: "Star Sports 2", category: "Sports", logo: "https://i.imgur.com/dRYpQzM.png", streams: ["https://starsports2.akamaized.net/hls/live/starsports2/master.m3u8"] },
-  { id: "sony-sports", name: "Sony Sports", category: "Sports", logo: "https://i.imgur.com/8tnXqDH.png", streams: ["https://sonysports.akamaized.net/hls/live/sonysports/master.m3u8"] },
-  { id: "espn", name: "ESPN", category: "Sports", logo: "https://i.imgur.com/F5GhQJ8.png", streams: ["https://espn.akamaized.net/hls/live/espn/master.m3u8"] },
-  { id: "ten-sports", name: "Ten Sports", category: "Sports", logo: "https://i.imgur.com/L9zKvX2.png", streams: ["https://tensports.akamaized.net/hls/live/tensports/master.m3u8"] },
-  { id: "star-cricket", name: "Star Cricket", category: "Sports", logo: "https://i.imgur.com/B7P5QzN.png", streams: ["https://starcricket.akamaized.net/hls/live/starcricket/master.m3u8"] },
-
-  // Islamic
-  { id: "peace-bangla", name: "Peace TV Bangla", category: "Islamic", logo: "https://i.imgur.com/Vq3F9Hx.png", streams: ["https://peacetvbangla.akamaized.net/hls/live/peacetv/master.m3u8"] },
-  { id: "peace-english", name: "Peace TV English", category: "Islamic", logo: "https://i.imgur.com/RyT8qK5.png", streams: ["https://peacetv.akamaized.net/hls/live/peacetv/master.m3u8"] },
-  { id: "islamic-tv", name: "Islamic TV", category: "Islamic", logo: "https://i.imgur.com/Z6jXqV3.png", streams: ["https://islamictv.akamaized.net/hls/live/islamictv/master.m3u8"] },
-
-  // International
-  { id: "sony-ent", name: "Sony Entertainment", category: "International", logo: "https://i.imgur.com/HpQ9X2L.png", streams: ["https://sonyent.akamaized.net/hls/live/sonyent/master.m3u8"] },
-  { id: "star-plus", name: "Star Plus", category: "International", logo: "https://i.imgur.com/W5T8qZK.png", streams: ["https://starplus.akamaized.net/hls/live/starplus/master.m3u8"] },
-  { id: "zee-tv", name: "Zee TV", category: "International", logo: "https://i.imgur.com/QyV7XpJ.png", streams: ["https://zeetv.akamaized.net/hls/live/zeetv/master.m3u8"] },
-  { id: "colors-tv", name: "Colors TV", category: "International", logo: "https://i.imgur.com/aB3Cd5e.png", streams: ["https://colorstv.akamaized.net/hls/live/colorstv/master.m3u8"] },
-  { id: "star-jalsha", name: "Star Jalsha", category: "International", logo: "https://i.imgur.com/Fx4Qj8K.png", streams: ["https://starjalsha.akamaized.net/hls/live/starjalsha/master.m3u8"] },
-
-  // Kids
-  { id: "cartoon-network", name: "Cartoon Network", category: "Kids", logo: "https://i.imgur.com/pN7yV2X.png", streams: ["https://cartoonnetwork.akamaized.net/hls/live/cartoonnetwork/master.m3u8"] },
-  { id: "disney", name: "Disney Channel", category: "Kids", logo: "https://i.imgur.com/Bz5Yq8L.png", streams: ["https://disney.akamaized.net/hls/live/disney/master.m3u8"] },
-  { id: "nickelodeon", name: "Nickelodeon", category: "Kids", logo: "https://i.imgur.com/Tk9XqV3.png", streams: ["https://nickelodeon.akamaized.net/hls/live/nickelodeon/master.m3u8"] },
-
-  // News International - using verified iptv-org public test streams
-  { id: "al-jazeera", name: "Al Jazeera English", category: "News", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Aljazeera_eng.svg/512px-Aljazeera_eng.svg.png", streams: ["https://live-hls-web-aje.getaj.net/AJE/01.m3u8"] },
-  { id: "bbc-world", name: "BBC World News", category: "News", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/BBC_News_2019.svg/512px-BBC_News_2019.svg.png", streams: ["https://vs-cmaf-pushb-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_news_channel_hd/iptv_hd_abr_v1.mpd"] },
-  { id: "cnn", name: "CNN International", category: "News", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/CNN.svg/512px-CNN.svg.png", streams: ["https://cnn-cnninternational-1-eu.rakuten.wurl.tv/playlist.m3u8"] },
-
-  // Demo working test
-  { id: "demo-bigbuck", name: "Demo HLS Stream", category: "Movies", logo: "https://placehold.co/512x288/0a0a1a/8b5cf6.png?text=DEMO", streams: ["https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"] },
+  {"id":"world-cup-2026","name":"World Cup 2026","category":"Sports","logo":"https://digitalhub.fifa.com/transform/598a1d22-62b6-486b-849c-e8bf55894179/FIFA_FWC26_Tournament-Thumbnail-4-3","streams":["https://d1211whpimeups.cloudfront.net/smil:rtbgo/chunklist.m3u8"]},
+  {"id":"sports-cazetv","name":"CazeTV","category":"Sports","logo":"https://images.seeklogo.com/logo-png/61/1/cazetv-logo-png_seeklogo-619708.png","streams":["https://dfr80qz435crc.cloudfront.net/MNOP/Amagi/Caze/Caze_TV_BR/1080p-vtt/index.m3u8"]},
+  {"id":"sports-foxsports","name":"FoxSports","category":"Sports","logo":"https://variety.com/wp-content/uploads/2023/08/Fox-Sports.png?w=1000&h=563&crop=1","streams":["http://84.17.50.102/fox/index.m3u8"]},
+  {"id":"sports-beinsports","name":"BeinSports","category":"Sports","logo":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCXstZBALCMN8PSOTNgRTE_cVr2p1U7m5SLQ&s","streams":["https://bein-esp-xumo.amagi.tv/playlistR1080p.m3u8"]},
+  {"id":"sports-channelone","name":"ChannelOne","category":"Sports","logo":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7HR0auERCGfI1w4fkZ-uIcWg97c32LpEd_0Hr7aRh7cKsAb1URzjCG2c&s=10","streams":["https://owrcovcrpy.gpcdn.net/bpk-tv/1702/output/1702-audio_113322_eng=113200-video=2202800.m3u8"]},
+  {"id":"sports-beinsports-2","name":"BeINSports-2","category":"Sports","logo":"https://assets-us-01.kc-usercontent.com/31dbcbc6-da4c-0033-328a-d7621d0fa726/1318873e-8501-4f79-bb69-182d741cf9ad/beIN%20SPORTS%20Portada.jpg","streams":["http://foxbleu-cdn.com/live/e8:aa:cb:c4:bf:92/aMzpeeG/78379.ts"]},
+  {"id":"sports-beinsports-4","name":"BeINSports-4","category":"Sports","logo":"https://assets-us-01.kc-usercontent.com/31dbcbc6-da4c-0033-328a-d7621d0fa726/1318873e-8501-4f79-bb69-182d741cf9ad/beIN%20SPORTS%20Portada.jpg","streams":["http://foxbleu-cdn.com/live/e8:aa:cb:c4:bf:92/aMzpeeG/78381.ts"]},
+  {"id":"sports-beinsports-5","name":"BeINSports-5","category":"Sports","logo":"https://assets-us-01.kc-usercontent.com/31dbcbc6-da4c-0033-328a-d7621d0fa726/1318873e-8501-4f79-bb69-182d741cf9ad/beIN%20SPORTS%20Portada.jpg","streams":["http://foxbleu-cdn.com/live/e8:aa:cb:c4:bf:92/aMzpeeG/78382.ts"]},
+  {"id":"sporza-dutch-aq","name":"Sporza DUTCH AQ","category":"Sports","logo":"https://cdn.uc.assets.prezly.com/870d12f1-d1f4-4668-8d25-0e8d79dd8e81/-/preview/-/format/auto/Untitled%20design%20(22).png","streams":["https://live.vrtcdn.be/groupd/live/0761024f-37fe-4254-bc37-e95d7c62b2d1/live.isml/.mpd"]},
+  {"id":"movie-bangla-12438","name":"Movie Bangla","category":"Movies","logo":"https://imglink.cc/cdn/B1Dn0E5UKs.png","streams":["http://str2.v3v3v.xyz:2082/live/rokhsi25_951396/POm6KqnW/277428.ts"]},
+  {"id":"goldmines-12381","name":"Goldmines","category":"Movies","logo":"https://imglink.cc/cdn/E86bN6IAxl.jpg","streams":["https://cdn-2.pishow.tv/live/1459/master.m3u8"]},
+  {"id":"hindi-classic-24-12385","name":"Hindi Classic 24","category":"Movies","logo":"https://imglink.cc/cdn/cScI5tEUjV.png","streams":["https://vods2.aynaott.com/hindimovies/index.m3u8"]},
+  {"id":"cmq7twb5500wkuh099s6sgvm2","name":"Action Hollywood Movies","category":"Movies","logo":"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgbgpw72MKf3E9wwUk9Srd4tQCL9-XewjnciT9uU03Jw1gGGE7DVniLi0vTwjnNZIRJPym7b8g9_u_qlO8Umncu3YgGBcQUICkc-ZkeqLDLwaeafP6nk2lK1h5OrQwVrQSPDYJXdOEMfPoIuBmonZYyzNFqGGehvHSed8_RN49jzxZ8QvnKTwneteBNVQ/s600/Nur_20251107_002149_0000.png","streams":["https://amg01076-lightningintern-actionhollywood-samsungnz-82rry.amagi.tv/playlist/amg01076-lightningintern-actionhollywood-samsungnz/playlist.m3u8"]},
+  {"id":"cmq7twb5500whuh09uf9ieojs","name":"Ananda TV","category":"Movies","logo":"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi2RNLiL4qhYEVawGUat1HjjDb693C2K8hUpM7xLiuYciPmjwIQ5j7TIevtcnsHdjGBLIZZJbFTAc4nRoys3vyN-IeEiParo1SNH19m-1IbWG9RPRcW_VoPdSDNfNlFD4NWrKoONwxhgYJuLUzaTQ-LpDoQuqyOMx6meiH7QStygj_kx_Yrs17Dz62ccw/s600/Nur_20251216_221801_0000.png","streams":["https://app24.jagobd.com.bd/c3VydmVyX8RpbEU9Mi8xNy8yMFDEEHGcfRgzQ6NTAgdEoaeFzbF92YWxIZTO0U0ezN1IzMyfvcEdsEfeDeKiNkVN3PTOmdFseWRtaW51aiPhnPTI2/anandatv.stream/tracks-v1a1/mono.m3u8"]},
+  {"id":"cmq7twb5500wmuh09ga686wp5","name":"B4U Kadak","category":"Movies","logo":"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjHljRYH5YMeCunedbeC2Zzcw7aT81fGdvFnpVmICN7XDkIq9BZnUf54TC_4_PiTvgzHIY5Ic5hUMbEO7UkcH0WDanBBSwlX6lslq0kbf5lCWbjJ5vVdMDui6xgo01qSgPuUIbWAphsN3DnZ9r3FsfVZgGUTnYYsgQbAVy_yhdGDm70O7ynQ9s1mE-MgA/s600/Nur_20251219_134934_0000.png","streams":["https://amg00877-b4unew-amg00877c4-xiaomi-in-5473.playouts.now.amagi.tv/playlist.m3u8"]},
+  {"id":"cmq7twb5500wnuh09vorw3kx5","name":"B4U Movies","category":"Movies","logo":"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEigt0nGC7CikfRA7QSQp5MKBpDg-G8YSHL-xa1sXq9_8X25R7RRN1aJdN_VD8OW_uHzRDENU6pzGa3tCTOqkdGBEvmlQ8_ymva95CO_Z5xpv6geQBo9GO1amoXVjMfNEg_d5BYhQ0z3KI5gjfsYn-xnyOu71cs3vJfr6ratfarDSqw2i4lCL5MQmaCrUQ/s600/Nur_20251219_134839_0000.png","streams":["https://amg00877-b4unew-amg00877c2-xiaomi-in-5489.playouts.now.amagi.tv/playlist.m3u8"]},
+  {"id":"cmq7twb5500wluh09x8hh7sdq","name":"Sony Movies","category":"Movies","logo":"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgNk47oTMuFgbjaG0yp7qPGD7w0Rf3rGRc7wURB_aUn-ArmAPsHo67HGOC8r-aiqd4AJhFhNQLu6LmGFhBj8pxHVL5ju7NCaI2ssa9QQm-rxmyv_zYwy9ehEIsdQVGxgLcGT8So2UCKIKIBz932Wi270pGc76elgFlp7aj3WXhrlOMvtUC2VxKni57FNg/s1080/1000060531.png","streams":["https://a-cdn.klowdtv.com/live1/smc_720p/chunks.m3u8"]},
+  {"id":"cmq7twb5500wguh098zdygidj","name":"SRK TV","category":"Movies","logo":"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi-gOTZYUBCEpOwrtIYHCLViHpAU9Cz7V6zR14fu6XOlYahvBguPaxmbjH6ClmGp-PpLVDR8iFTOLRXo7xmxXBg5heY_umgJK0DRNwFb8pqCPP0rwdtZ9goIjgur2DeyqzIAZXgkObDCGIMVjXwhfvDH1Ol-kzFc9PlKFC8iWpWtYUskRxoint29agY/s600/Nur_20251107_222900_0000.png","streams":["https://srknowapp.ncare.live/srktvhlswodrm/srktv.stream/playlist.m3u8"]},
+  {"id":"channel-24-12421","name":"Channel 24","category":"News","logo":"https://i.ibb.co.com/v65cfQ96/Channel-24.png","streams":["https://owrcovcrpy.gpcdn.net/bpk-tv/1703/output/1703-audio_113332_eng=113200-video=2202800.m3u8"]},
+  {"id":"dbc-news-12424","name":"DBC News","category":"News","logo":"https://i.ibb.co.com/TMKLMXs9/DBC-News.png","streams":["https://owrcovcrpy.gpcdn.net/bpk-tv/1728/output/index.m3u8"]},
+  {"id":"ekattor-tv-hd-12428","name":"Ekattor TV HD","category":"News","logo":"https://i.ibb.co.com/DPZrfqzr/Ekattor-TV-HD.png","streams":["https://owrcovcrpy.gpcdn.net/bpk-tv/1705/output/1705.m3u8"]},
+  {"id":"star-news-12443","name":"Star News","category":"News","logo":"https://i.ibb.co.com/cXTjmmtP/Star-News.png","streams":["https://owrcovcrpy.gpcdn.net/bpk-tv/1710/output/1710-audio_113402_eng=113200-video=1181200.m3u8"]},
+  {"id":"jago-news-24-12433","name":"Jago News 24","category":"News","logo":"https://i.ibb.co.com/KpRt3cT5/Jago-News-24.png","streams":["https://app.ncare.live/live-orgin/jagonews24.stream/live-orgin/jagonews24.stream/chunks.m3u8"]},
+  {"id":"news-24-12440","name":"News 24","category":"News","logo":"https://i.ibb.co.com/gLx9fX5N/News-24.png","streams":["https://owrcovcrpy.gpcdn.net/bpk-tv/1708/output/index.m3u8"]},
+  {"id":"sky-news-uk","name":"Sky News (UK)","category":"News","logo":"https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Sky_News_2023.svg/1200px-Sky_News_2023.svg.png","streams":["https://playback.live.sky.com/news/live/manifest.m3u8"]},
+  {"id":"al-jazeera-english","name":"Al Jazeera English","category":"News","logo":"https://upload.wikimedia.org/wikipedia/commons/f/f6/Al_Jazeera_English_logo.png","streams":["https://live-amp.akamaized.net/groupc/aljazeera/regions/aje/aje.m3u8"]},
+  {"id":"france-24-english","name":"France 24 English","category":"News","logo":"https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/France_24_logo.svg/1200px-France_24_logo.svg.png","streams":["https://static.france24.com/live/F24_EN_LO_HLS/live_tv.m3u8"]},
+  {"id":"nasa-hd-tv","name":"NASA HD TV","category":"Science","logo":"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/NASA_logo.svg/1200px-NASA_logo.svg.png","streams":["https://ntv1.akamaized.net/hls/live/2012879/NASA-NTV1-HLS/master.m3u8"]},
+  {"id":"deutsche-welle-news","name":"Deutsche Welle News","category":"News","logo":"https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Deutsche_Welle_logo_2012.svg/1200px-Deutsche_Welle_logo_2012.svg.png","streams":["https://dwstream72-lh.akamaihd.net/i/dwstream72_1@119253/master.m3u8"]},
+  {"id":"red-bull-tv-live","name":"Red Bull TV Live","category":"Sports","logo":"https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Red_Bull_TV_logo.svg/1200px-Red_Bull_TV_logo.svg.png","streams":["https://rbmn-live.akamaized.net/hls/live/590964/skate/master.m3u8"]},
+  {"id":"trt-world-english","name":"TRT World English","category":"News","logo":"https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/TRT_World_logo.svg/1200px-TRT_World_logo.svg.png","streams":["https://trtworld.live.trt.com.tr/hls_live/trtworld/trtworld_1.m3u8"]},
 ];
 
-export const categories = [
-  "All",
-  "Sports",
-  "News",
-  "Entertainment",
-  "Movies",
-  "Islamic",
-  "Kids",
-  "International",
-];
+export const categories = ["All","Movies","News","Science","Sports"];
