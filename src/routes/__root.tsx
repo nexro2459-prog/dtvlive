@@ -86,8 +86,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: "Dtv — Free Live TV Streaming" },
       { property: "og:description", content: "Watch free live TV channels from Bangladesh and around the world on Dtv." },
       { name: "twitter:description", content: "Watch free live TV channels from Bangladesh and around the world on Dtv." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/bfd1481f-66ef-4639-92a7-614a3c175c4a/id-preview-b125a888--bee5dcc9-7708-4f89-b82d-fc203355ea05.lovable.app-1781770023611.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/bfd1481f-66ef-4639-92a7-614a3c175c4a/id-preview-b125a888--bee5dcc9-7708-4f89-b82d-fc203355ea05.lovable.app-1781770023611.png" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/526f0560-d8b4-4e47-871e-c3710f72b949" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/526f0560-d8b4-4e47-871e-c3710f72b949" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
