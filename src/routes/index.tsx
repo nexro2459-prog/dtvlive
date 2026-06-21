@@ -55,11 +55,12 @@ function Home() {
   // Build server list: HLS streams + global embed hosts + per-channel custom embed.
   const customEmbed = embeds.get(current.id);
   const slug = current.embedSlug ?? current.id;
+  const channelType: "hls" | "iframe" = current.type ?? "hls";
   const servers: { url: string; label: string; type: "hls" | "iframe" }[] = [
     ...current.streams.map((u, i) => ({
       url: u,
       label: `Server ${i + 1}`,
-      type: "hls" as const,
+      type: channelType,
     })),
     ...EMBED_SERVERS.map((s, i) => ({
       url: buildEmbedUrl(s.base, slug),
@@ -70,6 +71,7 @@ function Home() {
       ? [{ url: customEmbed, label: "Embed", type: "iframe" as const }]
       : []),
   ];
+
   const safeIdx = Math.min(serverIdx, servers.length - 1);
   const currentServer = servers[safeIdx];
 
