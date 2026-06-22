@@ -6,7 +6,7 @@ import { useFavorites } from "@/lib/favorites";
 import { SiteHeader } from "@/components/SiteHeader";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import { Heart, Play, Link2, X } from "lucide-react";
+import { Heart, Play, Link2, X, Tv, Sparkles, Radio, Trophy, Calendar, Facebook, ChevronRight, Zap, Globe } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
