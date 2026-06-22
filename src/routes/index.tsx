@@ -520,18 +520,172 @@ function Home() {
         </div>
       </div>
 
-      <footer className="mt-10 border-t border-border/60 bg-background/60 py-8">
+      {/* ============ SCHEDULES ============ */}
+      <section id="schedules" className="mx-auto max-w-[1600px] scroll-mt-20 px-3 py-10 sm:px-6 sm:py-14">
+        <div className="grid gap-6 lg:grid-cols-2">
+          {[
+            { title: "Football Schedule", icon: "⚽", data: footballFixtures, accent: "from-[oklch(0.7_0.18_220)] to-[oklch(0.65_0.22_290)]" },
+            { title: "Cricket Schedule", icon: "🏏", data: cricketFixtures, accent: "from-[oklch(0.7_0.2_140)] to-[oklch(0.7_0.18_180)]" },
+          ].map((block) => (
+            <div
+              key={block.title}
+              className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-5 backdrop-blur-xl sm:p-6"
+            >
+              <div className={`absolute -top-20 right-0 h-40 w-40 rounded-full bg-gradient-to-br ${block.accent} opacity-30 blur-3xl`} />
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{block.icon}</span>
+                  <div>
+                    <h3 className="text-lg font-black text-foreground sm:text-xl">{block.title}</h3>
+                    <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Today · {todayLabel}</p>
+                  </div>
+                </div>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/90 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
+                  </span>
+                  Live
+                </span>
+              </div>
+              <ul className="space-y-2.5">
+                {block.data.map((m, i) => (
+                  <li
+                    key={i}
+                    className="group flex items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.02] p-3 transition hover:border-[oklch(0.7_0.18_290/0.5)] hover:bg-white/[0.05]"
+                  >
+                    <div className="grid w-16 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-white/10 to-white/[0.02] py-2 text-sm font-black text-foreground">
+                      {m.time}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {m.a} <span className="text-muted-foreground">vs</span> {m.b}
+                      </p>
+                      <p className="truncate text-[11px] text-muted-foreground">{m.comp} · {m.channel}</p>
+                    </div>
+                    <button
+                      onClick={scrollToLive}
+                      className="shrink-0 rounded-full border border-white/10 bg-white/5 p-2 text-white/80 opacity-0 transition group-hover:opacity-100 hover:bg-[oklch(0.65_0.22_290)] hover:text-white"
+                      aria-label="Watch"
+                    >
+                      <Play className="h-3.5 w-3.5 fill-current" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ============ FEATURED SPORTS EVENTS ============ */}
+      <section className="mx-auto max-w-[1600px] px-3 py-10 sm:px-6 sm:py-14">
+        <div className="mb-5 flex items-end justify-between">
+          <div>
+            <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-[oklch(0.78_0.18_290)]">
+              <Trophy className="h-3.5 w-3.5" /> Featured Sports
+            </p>
+            <h2 className="mt-1 text-2xl font-black text-foreground sm:text-3xl">Live Sports Events</h2>
+          </div>
+          <button onClick={() => { setCat("Sports"); scrollToLive(); }} className="text-xs font-semibold text-[oklch(0.78_0.18_290)] hover:underline">
+            View all sports →
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {featuredSports.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => selectChannel(c.id)}
+              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] text-left backdrop-blur-xl transition hover:-translate-y-1 hover:border-[oklch(0.7_0.18_290/0.7)] hover:shadow-[0_20px_50px_-15px_oklch(0.65_0.22_290/0.7)]"
+            >
+              <div className="relative aspect-video w-full overflow-hidden bg-gradient-to-br from-[oklch(0.2_0.05_280)] to-[oklch(0.15_0.04_220)]">
+                <img
+                  src={c.logo}
+                  alt={c.name}
+                  loading="lazy"
+                  className="absolute inset-0 m-auto h-2/3 w-2/3 object-contain transition-transform duration-500 group-hover:scale-110"
+                  onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-red-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+                  <span className="h-1 w-1 animate-pulse rounded-full bg-white" /> Live
+                </span>
+                <div className="absolute inset-0 grid place-items-center opacity-0 transition group-hover:opacity-100">
+                  <div className="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-[oklch(0.65_0.22_290)] to-[oklch(0.7_0.18_220)] shadow-[0_0_30px_oklch(0.65_0.22_290/0.8)]">
+                    <Play className="h-5 w-5 translate-x-0.5 fill-white text-white" />
+                  </div>
+                </div>
+              </div>
+              <div className="p-3">
+                <p className="truncate text-sm font-bold text-foreground">{c.name}</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{c.category}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* ============ CHANNEL CATEGORIES ============ */}
+      <section className="mx-auto max-w-[1600px] px-3 py-10 sm:px-6 sm:py-14">
+        <div className="mb-5">
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[oklch(0.78_0.18_290)]">▸ Explore</p>
+          <h2 className="mt-1 text-2xl font-black text-foreground sm:text-3xl">Channel Categories</h2>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+          {categories.filter((c) => c !== "All" && (categoryCounts[c] ?? 0) > 0).map((c) => (
+            <button
+              key={c}
+              onClick={() => { setCat(c); scrollToLive(); }}
+              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.05] to-white/[0.01] p-5 text-left backdrop-blur-xl transition hover:-translate-y-1 hover:border-[oklch(0.7_0.18_290/0.7)] hover:shadow-[0_20px_50px_-15px_oklch(0.65_0.22_290/0.6)]"
+            >
+              <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-[oklch(0.65_0.22_290/0.4)] to-transparent blur-2xl transition group-hover:scale-150" />
+              <p className="text-3xl font-black text-foreground">{categoryCounts[c]}</p>
+              <p className="mt-1 text-sm font-semibold text-foreground">{c}</p>
+              <p className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">Live channels</p>
+              <ChevronRight className="absolute bottom-3 right-3 h-4 w-4 text-white/30 transition group-hover:translate-x-1 group-hover:text-[oklch(0.78_0.18_290)]" />
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* ============ OWNER CREDITS ============ */}
+      <section className="mx-auto max-w-[1600px] px-3 py-10 sm:px-6 sm:py-14">
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[oklch(0.2_0.08_290/0.5)] via-[oklch(0.15_0.05_260/0.5)] to-[oklch(0.18_0.07_220/0.5)] p-8 text-center backdrop-blur-xl sm:p-12">
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute left-1/4 top-0 h-40 w-40 rounded-full bg-[oklch(0.65_0.22_290/0.4)] blur-3xl" />
+            <div className="absolute bottom-0 right-1/4 h-40 w-40 rounded-full bg-[oklch(0.7_0.18_220/0.4)] blur-3xl" />
+          </div>
+          <div className="relative">
+            <p className="text-[11px] font-bold uppercase tracking-[0.25em] text-[oklch(0.78_0.18_290)]">Founder & Creator</p>
+            <h3 className="mt-3 text-3xl font-black text-foreground sm:text-4xl">Abu Talib Fahim</h3>
+            <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
+              Built with passion to deliver the best free Live TV streaming experience to viewers worldwide.
+            </p>
+            <a
+              href="https://www.facebook.com/profile.php?id=61555694050570"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#1877F2] to-[#0a5dc7] px-6 py-3 text-sm font-bold text-white shadow-[0_10px_30px_-10px_rgba(24,119,242,0.9)] transition hover:scale-105"
+            >
+              <Facebook className="h-4 w-4" /> Follow on Facebook
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <footer className="mt-6 border-t border-border/60 bg-background/60 py-8">
         <div className="mx-auto max-w-7xl px-4 text-center text-xs text-muted-foreground">
           <p className="mx-auto max-w-2xl">
             <strong className="text-foreground">Disclaimer:</strong> We do not host any content.
             All streams are from publicly available sources.
           </p>
           <p className="mt-2">
-            © {new Date().getFullYear()} Dtv ·{" "}
+            © {new Date().getFullYear()} Dtv · Crafted by Abu Talib Fahim ·{" "}
             <Link to="/" className="hover:text-foreground">Home</Link>
           </p>
         </div>
       </footer>
+
       <ScrollToTop />
     </div>
   );
