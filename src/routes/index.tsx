@@ -81,15 +81,227 @@ function Home() {
     setCurrentId(id);
     setServerIdx(0);
     if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      const el = document.getElementById("live-tv");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      else window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
+
+  const scrollToLive = () => {
+    if (typeof window === "undefined") return;
+    document.getElementById("live-tv")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  // Highlight reels for the hero
+  const heroChannels = useMemo(() => {
+    const seen = new Set<string>();
+    const picks: typeof channels = [];
+    for (const c of channels) {
+      if (!c.logo || seen.has(c.name)) continue;
+      seen.add(c.name);
+      picks.push(c);
+      if (picks.length >= 14) break;
+    }
+    return picks;
+  }, []);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const c of channels) counts[c.category] = (counts[c.category] ?? 0) + 1;
+    return counts;
+  }, []);
+
+  const featuredSports = useMemo(
+    () => channels.filter((c) => c.category === "Sports").slice(0, 8),
+    [],
+  );
+
+  const todayLabel = new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
+
+  const footballFixtures = [
+    { time: "19:00", comp: "FIFA World Cup 2026 — Qualifier", a: "Netherlands", b: "Sweden", channel: "T Sports" },
+    { time: "21:30", comp: "UEFA Champions League", a: "Real Madrid", b: "Bayern Munich", channel: "Sony Sports 5" },
+    { time: "23:45", comp: "Premier League", a: "Manchester City", b: "Arsenal", channel: "FOX Sports" },
+    { time: "02:00", comp: "La Liga", a: "Barcelona", b: "Atlético Madrid", channel: "beIN SPORTS" },
+  ];
+
+  const cricketFixtures = [
+    { time: "14:30", comp: "ICC Test Series", a: "Bangladesh", b: "Pakistan", channel: "T Sports" },
+    { time: "18:00", comp: "T20I", a: "India", b: "Australia", channel: "SONY TEN Cricket" },
+    { time: "20:00", comp: "BPL 2026", a: "Dhaka Capitals", b: "Comilla Victorians", channel: "T Sports" },
+    { time: "22:30", comp: "ODI", a: "England", b: "South Africa", channel: "Willow HD" },
+  ];
 
   return (
     <div className="min-h-screen">
       <SiteHeader search={search} onSearch={setSearch} />
 
-      <div className="mx-auto max-w-[1600px] px-3 py-4 sm:px-6 sm:py-6">
+      {/* ============ PREMIUM LIVE TV HERO ============ */}
+      <section className="relative overflow-hidden">
+        {/* Background orbs */}
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute -left-32 -top-32 h-[28rem] w-[28rem] rounded-full bg-[oklch(0.65_0.22_290/0.35)] blur-3xl animate-pulse" />
+          <div className="absolute -right-32 top-20 h-[26rem] w-[26rem] rounded-full bg-[oklch(0.7_0.18_220/0.3)] blur-3xl animate-pulse [animation-delay:1.5s]" />
+          <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-[oklch(0.7_0.2_340/0.25)] blur-3xl" />
+          <div
+            className="absolute inset-0 opacity-[0.07]"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
+              backgroundSize: "44px 44px",
+            }}
+          />
+        </div>
+
+        <div className="mx-auto grid max-w-[1600px] gap-8 px-3 py-10 sm:px-6 sm:py-16 lg:grid-cols-[1.15fr_1fr] lg:py-20">
+          {/* Left: copy */}
+          <div className="relative">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80 backdrop-blur-xl">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-500" />
+              </span>
+              On Air Now · {todayLabel}
+            </div>
+
+            <h1 className="mt-5 text-4xl font-black leading-[1.05] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
+              Watch{" "}
+              <span className="bg-gradient-to-r from-[oklch(0.78_0.2_290)] via-[oklch(0.78_0.18_220)] to-[oklch(0.78_0.2_340)] bg-clip-text text-transparent">
+                Live TV
+              </span>
+              <br /> Channels in HD
+            </h1>
+
+            <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
+              Sports, News, Movies, Music & more — streaming free in HD &amp; Ultra HD with
+              instant playback and zero buffering.
+            </p>
+
+            <ul className="mt-6 flex flex-wrap gap-2 text-xs sm:text-sm">
+              {[
+                { icon: Tv, label: `${channels.length}+ Live Channels` },
+                { icon: Zap, label: "HD & 4K Streaming" },
+                { icon: Globe, label: "Worldwide Coverage" },
+                { icon: Sparkles, label: "100% Free Forever" },
+              ].map(({ icon: Icon, label }) => (
+                <li
+                  key={label}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 font-medium text-white/85 backdrop-blur-xl"
+                >
+                  <Icon className="h-3.5 w-3.5 text-[oklch(0.8_0.18_290)]" />
+                  {label}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <button
+                onClick={scrollToLive}
+                className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-gradient-to-r from-[oklch(0.65_0.22_290)] via-[oklch(0.68_0.2_260)] to-[oklch(0.7_0.18_220)] px-7 py-3.5 text-sm font-bold text-white shadow-[0_0_50px_-5px_oklch(0.65_0.22_290/0.9)] transition-transform hover:scale-[1.03] sm:text-base"
+              >
+                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-white/20 backdrop-blur-md">
+                  <Play className="h-3.5 w-3.5 translate-x-0.5 fill-white text-white" />
+                </span>
+                Watch Live TV Now
+              </button>
+              <a
+                href="#schedules"
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white/90 backdrop-blur-xl transition hover:bg-white/10"
+              >
+                <Calendar className="h-4 w-4" /> Today’s Schedule
+              </a>
+            </div>
+
+            <div className="mt-8 flex items-center gap-6 text-xs text-muted-foreground">
+              <div>
+                <p className="text-2xl font-black text-foreground">{channels.length.toLocaleString()}+</p>
+                <p>Channels</p>
+              </div>
+              <div className="h-8 w-px bg-white/10" />
+              <div>
+                <p className="text-2xl font-black text-foreground">{categoryCounts["Sports"] ?? 0}</p>
+                <p>Sports streams</p>
+              </div>
+              <div className="h-8 w-px bg-white/10" />
+              <div>
+                <p className="text-2xl font-black text-foreground">24/7</p>
+                <p>Always On</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right: glass preview card */}
+          <div className="relative">
+            <div className="absolute -inset-1 rounded-[28px] bg-gradient-to-br from-[oklch(0.65_0.22_290/0.6)] via-transparent to-[oklch(0.7_0.18_220/0.5)] blur-2xl" />
+            <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-white/[0.04] p-5 backdrop-blur-2xl shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-[0_0_18px_rgba(239,68,68,0.7)]">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
+                    </span>
+                    Live
+                  </span>
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-white/70">
+                    Featured Channels
+                  </span>
+                </div>
+                <Radio className="h-4 w-4 text-white/60" />
+              </div>
+
+              <div className="mt-4 grid grid-cols-4 gap-2.5 sm:grid-cols-5">
+                {heroChannels.map((c, i) => (
+                  <button
+                    key={c.id}
+                    onClick={() => selectChannel(c.id)}
+                    className="group relative aspect-square overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] transition hover:-translate-y-0.5 hover:border-[oklch(0.75_0.2_290/0.7)] hover:shadow-[0_10px_30px_-10px_oklch(0.65_0.22_290/0.8)]"
+                    style={{ animation: `fade-in 0.6s ease-out ${i * 60}ms both` }}
+                    title={c.name}
+                  >
+                    <img
+                      src={c.logo}
+                      alt={c.name}
+                      loading="lazy"
+                      className="absolute inset-0 m-auto h-3/4 w-3/4 object-contain transition-transform duration-500 group-hover:scale-110"
+                      onError={(e) => ((e.currentTarget as HTMLImageElement).style.display = "none")}
+                    />
+                    <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.9)]" />
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={scrollToLive}
+                className="mt-4 flex w-full items-center justify-between rounded-2xl border border-white/10 bg-gradient-to-r from-[oklch(0.65_0.22_290/0.25)] to-[oklch(0.7_0.18_220/0.25)] px-4 py-3 text-left text-sm font-semibold text-white backdrop-blur-xl transition hover:from-[oklch(0.65_0.22_290/0.4)] hover:to-[oklch(0.7_0.18_220/0.4)]"
+              >
+                <span className="flex items-center gap-2">
+                  <Tv className="h-4 w-4" />
+                  Browse all {channels.length.toLocaleString()} live channels
+                </span>
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ MAIN LIVE TV PLAYER + GRID ============ */}
+      <div id="live-tv" className="mx-auto max-w-[1600px] scroll-mt-20 px-3 py-4 sm:px-6 sm:py-6">
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[oklch(0.78_0.18_290)]">
+              ▸ Now Streaming
+            </p>
+            <h2 className="mt-1 text-2xl font-black text-foreground sm:text-3xl">Live TV Channels</h2>
+          </div>
+        </div>
+
         <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
           {/* Player column */}
           <div className="lg:sticky lg:top-20 lg:self-start">
