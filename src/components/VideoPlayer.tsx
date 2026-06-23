@@ -86,9 +86,36 @@ export function VideoPlayer({ src, poster, type = "hls" }: Props) {
     if (Hls.isSupported() && src.includes(".m3u8")) {
       hls = new Hls({
         enableWorker: true,
-        lowLatencyMode: true,
-        backBufferLength: 30,
+        // Disable low-latency mode: live TV streams without LL-HLS tags
+        // stall and rebuffer frequently when LL is forced on.
+        lowLatencyMode: false,
+        // Generous forward/back buffers smooth out network jitter
+        backBufferLength: 60,
+        maxBufferLength: 30,
+        maxMaxBufferLength: 90,
+        maxBufferSize: 60 * 1000 * 1000, // 60 MB
+        maxBufferHole: 0.5,
+        highBufferWatchdogPeriod: 2,
+        nudgeMaxRetry: 10,
+        // Faster, more reliable startup
+        startLevel: -1, // auto
+        testBandwidth: true,
+        abrEwmaDefaultEstimate: 1_000_000,
+        abrBandWidthFactor: 0.9,
+        abrBandWidthUpFactor: 0.7,
+        // Aggressive retries before surfacing an error
+        manifestLoadingTimeOut: 15000,
+        manifestLoadingMaxRetry: 4,
+        manifestLoadingRetryDelay: 500,
+        levelLoadingTimeOut: 15000,
+        levelLoadingMaxRetry: 6,
+        levelLoadingRetryDelay: 500,
+        fragLoadingTimeOut: 20000,
+        fragLoadingMaxRetry: 8,
+        fragLoadingRetryDelay: 500,
         capLevelToPlayerSize: true,
+        capLevelOnFPSDrop: true,
+        progressive: true,
       });
       hlsRef.current = hls;
       hls.loadSource(src);
@@ -115,14 +142,53 @@ export function VideoPlayer({ src, poster, type = "hls" }: Props) {
         if (lvl?.height) setAutoActiveHeight(lvl.height);
       });
 
+      // Auto-nudge past stalls during live playback
+      let stallRecoverTimer: number | null = null;
+      const onWaiting = () => {
+        if (stallRecoverTimer) window.clearTimeout(stallRecoverTimer);
+        stallRecoverTimer = window.setTimeout(() => {
+          // If still stalled, seek to live edge
+          try {
+            if (video.readyState < 3 && hls) {
+              const seekable = video.seekable;
+              if (seekable.length > 0) {
+                const live = seekable.end(seekable.length - 1) - 2;
+                if (live > video.currentTime + 5) video.currentTime = live;
+              }
+              video.play().catch(() => {});
+            }
+          } catch {}
+        }, 4000);
+      };
+      const onPlaying = () => {
+        if (stallRecoverTimer) {
+          window.clearTimeout(stallRecoverTimer);
+          stallRecoverTimer = null;
+        }
+      };
+      video.addEventListener("waiting", onWaiting);
+      video.addEventListener("playing", onPlaying);
+
+      let networkRetries = 0;
+      let mediaRetries = 0;
       hls.on(Hls.Events.ERROR, (_e, data) => {
         if (!data.fatal) return;
         switch (data.type) {
           case Hls.ErrorTypes.NETWORK_ERROR:
-            hls!.startLoad();
+            if (networkRetries++ < 3) {
+              setTimeout(() => hls!.startLoad(), 800);
+            } else {
+              setError("Stream is currently offline. Try another server.");
+              setLoading(false);
+            }
             break;
           case Hls.ErrorTypes.MEDIA_ERROR:
-            hls!.recoverMediaError();
+            if (mediaRetries++ < 2) {
+              hls!.recoverMediaError();
+            } else {
+              setError("Playback error. Try another server.");
+              setLoading(false);
+            }
             break;
           default:
             setError("Stream is currently offline. Try another server.");
@@ -478,7 +544,7 @@ export function VideoPlayer({ src, poster, type = "hls" }: Props) {
                 )}
               </div>
 
-              {document.pictureInPictureEnabled && (
+              {typeof document !== "undefined" && document.pictureInPictureEnabled && (
                 <button
                   onClick={togglePip}
                   className={`rounded-full p-2 text-white transition hover:bg-white/15 ${
