@@ -4,6 +4,7 @@ import { channels, categories } from "@/lib/channels";
 import { EMBED_SERVERS, buildEmbedUrl, useChannelEmbeds } from "@/lib/embeds";
 import { useFavorites } from "@/lib/favorites";
 import { SiteHeader } from "@/components/SiteHeader";
+import { OwnerCard } from "@/components/OwnerCard";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { Heart, Play, Link2, X } from "lucide-react";
@@ -307,6 +308,8 @@ function Home() {
           </div>
         </div>
       </div>
+
+      <OwnerCard />
 
       <footer className="mt-10 border-t border-border/60 bg-background/60 py-8">
         <div className="mx-auto max-w-7xl px-4 text-center text-xs text-muted-foreground">
