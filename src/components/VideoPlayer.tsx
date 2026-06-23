@@ -544,7 +544,7 @@ export function VideoPlayer({ src, poster, type = "hls" }: Props) {
                 )}
               </div>
 
-              {document.pictureInPictureEnabled && (
+              {typeof document !== "undefined" && document.pictureInPictureEnabled && (
                 <button
                   onClick={togglePip}
                   className={`rounded-full p-2 text-white transition hover:bg-white/15 ${
