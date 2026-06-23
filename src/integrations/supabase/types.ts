@@ -14,7 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admin_credentials: {
+        Row: {
+          created_at: string
+          id: number
+          password_hash: string | null
+          password_salt: string | null
+          session_expires: string | null
+          session_token: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          password_hash?: string | null
+          password_salt?: string | null
+          session_expires?: string | null
+          session_token?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          password_hash?: string | null
+          password_salt?: string | null
+          session_expires?: string | null
+          session_token?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      admin_login_attempts: {
+        Row: {
+          attempted_at: string
+          id: number
+          ip: string
+          success: boolean
+        }
+        Insert: {
+          attempted_at?: string
+          id?: number
+          ip: string
+          success?: boolean
+        }
+        Update: {
+          attempted_at?: string
+          id?: number
+          ip?: string
+          success?: boolean
+        }
+        Relationships: []
+      }
+      site_profile: {
+        Row: {
+          avatar_url: string | null
+          badges: string[]
+          bio: string
+          display_name: string
+          id: number
+          social_links: Json
+          tagline: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          badges?: string[]
+          bio?: string
+          display_name?: string
+          id?: number
+          social_links?: Json
+          tagline?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          badges?: string[]
+          bio?: string
+          display_name?: string
+          id?: number
+          social_links?: Json
+          tagline?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
