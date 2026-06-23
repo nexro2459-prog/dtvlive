@@ -308,6 +308,8 @@ function Home() {
         </div>
       </div>
 
+      <OwnerCard />
+
       <footer className="mt-10 border-t border-border/60 bg-background/60 py-8">
         <div className="mx-auto max-w-7xl px-4 text-center text-xs text-muted-foreground">
           <p className="mx-auto max-w-2xl">
