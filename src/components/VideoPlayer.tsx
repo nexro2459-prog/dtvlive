@@ -60,6 +60,8 @@ export function VideoPlayer({ src, poster, type = "hls" }: Props) {
   const [pipActive, setPipActive] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   const [qualities, setQualities] = useState<QualityOption[]>([]);
   const [currentLevel, setCurrentLevel] = useState<number>(-1); // -1 = auto
@@ -544,7 +546,7 @@ export function VideoPlayer({ src, poster, type = "hls" }: Props) {
                 )}
               </div>
 
-              {typeof document !== "undefined" && document.pictureInPictureEnabled && (
+              {mounted && typeof document !== "undefined" && document.pictureInPictureEnabled && (
                 <button
                   onClick={togglePip}
                   className={`rounded-full p-2 text-white transition hover:bg-white/15 ${
