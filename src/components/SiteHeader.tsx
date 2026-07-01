@@ -35,6 +35,13 @@ export function SiteHeader({ search, onSearch }: Props) {
           >
             Live TV
           </Link>
+          <Link
+            to="/anime"
+            className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition hover:text-foreground"
+            activeProps={{ className: "text-foreground bg-card/60" }}
+          >
+            Anime
+          </Link>
         </nav>
 
         {onSearch && (
