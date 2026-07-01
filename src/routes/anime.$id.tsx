@@ -78,7 +78,7 @@ function AnimeDetail() {
                 {item.title}
               </h1>
               <div className="mt-3 flex flex-wrap gap-1.5">
-                {item.categories.map((c) => (
+                {item.categories.map((c: string) => (
                   <span
                     key={c}
                     className="rounded-full border border-border bg-card/60 px-2 py-0.5 text-[10px] font-medium capitalize text-muted-foreground"

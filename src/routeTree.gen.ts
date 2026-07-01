@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LivetvRouteImport } from './routes/livetv'
 import { Route as CustomizeRouteImport } from './routes/customize'
+import { Route as AnimeRouteImport } from './routes/anime'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WatchIdRouteImport } from './routes/watch.$id'
+import { Route as AnimeIdRouteImport } from './routes/anime.$id'
 
 const LivetvRoute = LivetvRouteImport.update({
   id: '/livetv',
@@ -22,6 +24,11 @@ const LivetvRoute = LivetvRouteImport.update({
 const CustomizeRoute = CustomizeRouteImport.update({
   id: '/customize',
   path: '/customize',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnimeRoute = AnimeRouteImport.update({
+  id: '/anime',
+  path: '/anime',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -34,36 +41,61 @@ const WatchIdRoute = WatchIdRouteImport.update({
   path: '/watch/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnimeIdRoute = AnimeIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AnimeRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/anime': typeof AnimeRouteWithChildren
   '/customize': typeof CustomizeRoute
   '/livetv': typeof LivetvRoute
+  '/anime/$id': typeof AnimeIdRoute
   '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/anime': typeof AnimeRouteWithChildren
   '/customize': typeof CustomizeRoute
   '/livetv': typeof LivetvRoute
+  '/anime/$id': typeof AnimeIdRoute
   '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/anime': typeof AnimeRouteWithChildren
   '/customize': typeof CustomizeRoute
   '/livetv': typeof LivetvRoute
+  '/anime/$id': typeof AnimeIdRoute
   '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/customize' | '/livetv' | '/watch/$id'
+  fullPaths:
+    | '/'
+    | '/anime'
+    | '/customize'
+    | '/livetv'
+    | '/anime/$id'
+    | '/watch/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/customize' | '/livetv' | '/watch/$id'
-  id: '__root__' | '/' | '/customize' | '/livetv' | '/watch/$id'
+  to: '/' | '/anime' | '/customize' | '/livetv' | '/anime/$id' | '/watch/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/anime'
+    | '/customize'
+    | '/livetv'
+    | '/anime/$id'
+    | '/watch/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnimeRoute: typeof AnimeRouteWithChildren
   CustomizeRoute: typeof CustomizeRoute
   LivetvRoute: typeof LivetvRoute
   WatchIdRoute: typeof WatchIdRoute
@@ -85,6 +117,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CustomizeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/anime': {
+      id: '/anime'
+      path: '/anime'
+      fullPath: '/anime'
+      preLoaderRoute: typeof AnimeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -99,11 +138,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WatchIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/anime/$id': {
+      id: '/anime/$id'
+      path: '/$id'
+      fullPath: '/anime/$id'
+      preLoaderRoute: typeof AnimeIdRouteImport
+      parentRoute: typeof AnimeRoute
+    }
   }
 }
 
+interface AnimeRouteChildren {
+  AnimeIdRoute: typeof AnimeIdRoute
+}
+
+const AnimeRouteChildren: AnimeRouteChildren = {
+  AnimeIdRoute: AnimeIdRoute,
+}
+
+const AnimeRouteWithChildren = AnimeRoute._addFileChildren(AnimeRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnimeRoute: AnimeRouteWithChildren,
   CustomizeRoute: CustomizeRoute,
   LivetvRoute: LivetvRoute,
   WatchIdRoute: WatchIdRoute,
