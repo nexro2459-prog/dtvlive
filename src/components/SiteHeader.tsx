@@ -19,6 +19,24 @@ export function SiteHeader({ search, onSearch }: Props) {
           </span>
         </Link>
 
+        <nav className="ml-2 hidden items-center gap-1 sm:flex">
+          <Link
+            to="/"
+            activeOptions={{ exact: true }}
+            className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition hover:text-foreground"
+            activeProps={{ className: "text-foreground bg-card/60" }}
+          >
+            Home
+          </Link>
+          <Link
+            to="/livetv"
+            className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition hover:text-foreground"
+            activeProps={{ className: "text-foreground bg-card/60" }}
+          >
+            Live TV
+          </Link>
+        </nav>
+
         {onSearch && (
           <div className="relative ml-auto w-full max-w-md">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -30,7 +48,17 @@ export function SiteHeader({ search, onSearch }: Props) {
             />
           </div>
         )}
+
+        {!onSearch && (
+          <Link
+            to="/livetv"
+            className="ml-auto rounded-full bg-gradient-to-r from-[oklch(0.65_0.22_290)] to-[oklch(0.7_0.18_220)] px-4 py-1.5 text-sm font-semibold text-white shadow-[0_0_20px_oklch(0.7_0.2_280/0.4)] transition hover:brightness-110"
+          >
+            Watch Live
+          </Link>
+        )}
       </div>
     </header>
   );
 }
+

@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LivetvRouteImport } from './routes/livetv'
 import { Route as CustomizeRouteImport } from './routes/customize'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WatchIdRouteImport } from './routes/watch.$id'
 
+const LivetvRoute = LivetvRouteImport.update({
+  id: '/livetv',
+  path: '/livetv',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CustomizeRoute = CustomizeRouteImport.update({
   id: '/customize',
   path: '/customize',
@@ -32,35 +38,46 @@ const WatchIdRoute = WatchIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/customize': typeof CustomizeRoute
+  '/livetv': typeof LivetvRoute
   '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/customize': typeof CustomizeRoute
+  '/livetv': typeof LivetvRoute
   '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/customize': typeof CustomizeRoute
+  '/livetv': typeof LivetvRoute
   '/watch/$id': typeof WatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/customize' | '/watch/$id'
+  fullPaths: '/' | '/customize' | '/livetv' | '/watch/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/customize' | '/watch/$id'
-  id: '__root__' | '/' | '/customize' | '/watch/$id'
+  to: '/' | '/customize' | '/livetv' | '/watch/$id'
+  id: '__root__' | '/' | '/customize' | '/livetv' | '/watch/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CustomizeRoute: typeof CustomizeRoute
+  LivetvRoute: typeof LivetvRoute
   WatchIdRoute: typeof WatchIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/livetv': {
+      id: '/livetv'
+      path: '/livetv'
+      fullPath: '/livetv'
+      preLoaderRoute: typeof LivetvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/customize': {
       id: '/customize'
       path: '/customize'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CustomizeRoute: CustomizeRoute,
+  LivetvRoute: LivetvRoute,
   WatchIdRoute: WatchIdRoute,
 }
 export const routeTree = rootRouteImport
