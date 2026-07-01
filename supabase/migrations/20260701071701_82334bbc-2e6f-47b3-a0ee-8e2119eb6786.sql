@@ -1,0 +1,1 @@
+UPDATE public.admin_credentials SET password_hash = NULL, password_salt = NULL, session_token = NULL, session_expires = NULL WHERE id = 1;
