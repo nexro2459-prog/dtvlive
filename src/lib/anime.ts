@@ -139,23 +139,8 @@ export async function fetchAnimeList(opts: ListOptions = {}): Promise<ListResult
   else if (type === "series")
     variables.formatNot = "MOVIE"; // exclude movies
 
-  const query = `
-    query ($page: Int, $perPage: Int, $search: String, $genre: String, $sort: [MediaSort], $format: MediaFormat, $formatNot: MediaFormat) {
-      Page(page: $page, perPage: $perPage) {
-        pageInfo { hasNextPage total }
-        media(
-          type: ANIME
-          isAdult: false
-          search: $search
-          genre_in: $genre ? [$genre] : null
-          sort: $sort
-          format: $format
-          format_not: $formatNot
-        ) { ${MEDIA_FIELDS} }
-      }
-    }
-  `;
-  // AniList doesn't support the ternary above — build the query dynamically.
+  // Build the query dynamically so unused variables don't get declared.
+
   const dynamicQuery = `
     query ($page: Int, $perPage: Int, $search: String${genre && genre !== "All" ? ", $genre: String" : ""}, $sort: [MediaSort]${type === "movie" ? ", $format: MediaFormat" : ""}${type === "series" ? ", $formatNot: MediaFormat" : ""}) {
       Page(page: $page, perPage: $perPage) {
