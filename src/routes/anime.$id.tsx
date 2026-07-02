@@ -134,7 +134,7 @@ function AnimeDetail() {
                   : ""}
               </p>
               <div className="mt-3 flex flex-wrap gap-1.5">
-                {item.genres.map((c) => (
+                {item.genres.map((c: string) => (
                   <span
                     key={c}
                     className="rounded-full border border-border bg-card/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
