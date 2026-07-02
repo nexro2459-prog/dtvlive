@@ -1,9 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Search, Film, Tv2, Play, ExternalLink } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Search, Film, Tv2, Play, Loader2, ExternalLink } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import { animeCatalog, animeGenres } from "@/lib/anime";
+import {
+  animeGenres,
+  fetchAnimeList,
+  type AnimeItem,
+  type ListOptions,
+} from "@/lib/anime";
 
 export const Route = createFileRoute("/anime")({
   head: () => ({
@@ -12,12 +17,12 @@ export const Route = createFileRoute("/anime")({
       {
         name: "description",
         content:
-          "Browse and watch anime series and movies. Curated from watchanimeworld.net — dubbed and subbed, action, romance, isekai, sports and more.",
+          "Browse and stream anime series and movies in HD. Powered by AniList with reliable HD playback.",
       },
       { property: "og:title", content: "Anime — Dtv" },
       {
         property: "og:description",
-        content: "A clean anime library with smooth streaming on Dtv.",
+        content: "Endless anime library with smooth HD streaming on Dtv.",
       },
     ],
   }),
@@ -25,21 +30,69 @@ export const Route = createFileRoute("/anime")({
 });
 
 type TypeFilter = "all" | "series" | "movie";
+type SortKey = NonNullable<ListOptions["sort"]>;
 
 function AnimePage() {
   const [q, setQ] = useState("");
   const [genre, setGenre] = useState<string>("All");
   const [typeF, setTypeF] = useState<TypeFilter>("all");
+  const [sort, setSort] = useState<SortKey>("TRENDING");
+  const [page, setPage] = useState(1);
 
-  const filtered = useMemo(() => {
-    const ql = q.trim().toLowerCase();
-    return animeCatalog.filter((a) => {
-      if (typeF !== "all" && a.type !== typeF) return false;
-      if (genre !== "All" && !a.categories.includes(genre)) return false;
-      if (ql && !a.title.toLowerCase().includes(ql)) return false;
-      return true;
-    });
-  }, [q, genre, typeF]);
+  const [items, setItems] = useState<AnimeItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [hasNext, setHasNext] = useState(false);
+  const [total, setTotal] = useState(0);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+    setItems([]);
+  }, [q, genre, typeF, sort]);
+
+  // Debounced search
+  const [debouncedQ, setDebouncedQ] = useState(q);
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedQ(q), 300);
+    return () => clearTimeout(id);
+  }, [q]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    fetchAnimeList({
+      page,
+      perPage: 30,
+      search: debouncedQ,
+      genre,
+      type: typeF,
+      sort,
+    })
+      .then((r) => {
+        if (cancelled) return;
+        setItems((prev) => (page === 1 ? r.items : [...prev, ...r.items]));
+        setHasNext(r.hasNextPage);
+        setTotal(r.total);
+      })
+      .catch((e: Error) => !cancelled && setError(e.message))
+      .finally(() => !cancelled && setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedQ, genre, typeF, sort, page]);
+
+  const sortOptions = useMemo(
+    () =>
+      [
+        { id: "TRENDING", label: "Trending" },
+        { id: "POPULARITY", label: "Popular" },
+        { id: "SCORE", label: "Top Rated" },
+        { id: "RECENT", label: "Newest" },
+      ] as { id: SortKey; label: string }[],
+    [],
+  );
 
   return (
     <div className="relative min-h-screen">
@@ -54,15 +107,14 @@ function AnimePage() {
       <SiteHeader />
 
       <main className="mx-auto max-w-[1600px] px-4 pb-16 pt-8">
-        {/* Header */}
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
               Anime Library
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {animeCatalog.length} titles · series &amp; movies · powered by
-              watchanimeworld.net
+              {total > 0 ? `${total.toLocaleString()} titles · ` : ""}series &amp;
+              movies · HD streaming
             </p>
           </div>
 
@@ -77,8 +129,8 @@ function AnimePage() {
           </div>
         </div>
 
-        {/* Type toggle */}
-        <div className="mb-3 flex gap-2">
+        {/* Type + sort */}
+        <div className="mb-3 flex flex-wrap items-center gap-2">
           {[
             { id: "all" as TypeFilter, label: "All", icon: null },
             { id: "series" as TypeFilter, label: "Series", icon: Tv2 },
@@ -100,6 +152,25 @@ function AnimePage() {
               </button>
             );
           })}
+
+          <div className="ml-auto flex items-center gap-1.5">
+            {sortOptions.map((s) => {
+              const active = sort === s.id;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setSort(s.id)}
+                  className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${
+                    active
+                      ? "border-transparent bg-white/10 text-foreground"
+                      : "border-border bg-card/40 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {s.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Genre tabs */}
@@ -124,14 +195,19 @@ function AnimePage() {
           </div>
         </div>
 
-        {/* Grid */}
-        {filtered.length === 0 ? (
+        {error && (
+          <div className="mb-4 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+            {error}
+          </div>
+        )}
+
+        {items.length === 0 && !loading ? (
           <div className="rounded-2xl border border-border bg-card/40 py-16 text-center text-sm text-muted-foreground">
             No titles match your search.
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            {filtered.map((a) => (
+            {items.map((a) => (
               <Link
                 key={a.id}
                 to="/anime/$id"
@@ -139,22 +215,29 @@ function AnimePage() {
                 className="group relative overflow-hidden rounded-xl border border-border bg-card/60 transition hover:-translate-y-1 hover:border-[oklch(0.7_0.18_290/0.7)] hover:shadow-[0_15px_40px_-15px_oklch(0.65_0.22_290/0.7)]"
               >
                 <div className="relative aspect-[2/3] w-full overflow-hidden bg-gradient-to-br from-[oklch(0.2_0.05_280)] to-[oklch(0.15_0.04_320)]">
-                  <img
-                    src={a.poster}
-                    alt={a.title}
-                    loading="lazy"
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display = "none";
-                    }}
-                  />
+                  {a.poster ? (
+                    <img
+                      src={a.poster}
+                      alt={a.title}
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : null}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent opacity-70 transition group-hover:opacity-95" />
                   <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white backdrop-blur">
                     {a.type === "movie" ? "Movie" : "Series"}
                   </span>
+                  {a.averageScore ? (
+                    <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-bold text-white backdrop-blur">
+                      ★ {(a.averageScore / 10).toFixed(1)}
+                    </span>
+                  ) : null}
                   <div className="absolute inset-x-0 bottom-0 p-2.5">
                     <p className="line-clamp-2 text-xs font-semibold leading-tight text-white drop-shadow">
                       {a.title}
+                    </p>
+                    <p className="mt-0.5 text-[10px] text-white/70">
+                      {a.year ?? ""} {a.episodes ? `· ${a.episodes} ep` : ""}
                     </p>
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
@@ -168,23 +251,41 @@ function AnimePage() {
           </div>
         )}
 
+        {loading && (
+          <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" /> Loading...
+          </div>
+        )}
+
+        {!loading && hasNext && (
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={() => setPage((p) => p + 1)}
+              className="rounded-full bg-gradient-to-r from-[oklch(0.65_0.22_290)] to-[oklch(0.7_0.18_220)] px-6 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_oklch(0.7_0.2_290/0.5)] transition hover:scale-105"
+            >
+              Load more
+            </button>
+          </div>
+        )}
+
         <div className="mt-10 rounded-2xl border border-border/60 bg-card/40 p-5 text-center text-xs text-muted-foreground backdrop-blur">
-          Looking for more? Browse the full catalog on{" "}
+          Powered by AniList &amp; multi-server HD embeds. If a stream is
+          unavailable, switch servers on the watch page or{" "}
           <a
-            href="https://watchanimeworld.net/series/"
+            href="https://anilist.co/search/anime"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1 font-semibold text-foreground hover:underline"
           >
-            watchanimeworld.net <ExternalLink className="h-3 w-3" />
+            browse AniList <ExternalLink className="h-3 w-3" />
           </a>
         </div>
       </main>
 
       <footer className="border-t border-border/60 bg-background/60 py-6">
         <div className="mx-auto max-w-7xl px-4 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Dtv · Anime metadata &amp; streams via
-          watchanimeworld.net. We do not host any content.
+          © {new Date().getFullYear()} Dtv · Anime metadata via AniList. We do
+          not host any content.
         </div>
       </footer>
       <ScrollToTop />
