@@ -129,7 +129,10 @@ function CustomizePage() {
         {stage === "login" && <LoginPanel onLoggedIn={handleLoggedIn} />}
 
         {stage === "editor" && token && (
-          <EditorPanel token={token} onLogout={handleLogout} />
+          <div className="space-y-6">
+            <EditorPanel token={token} onLogout={handleLogout} />
+            <ChannelSourcesPanel token={token} />
+          </div>
         )}
       </div>
     </div>
