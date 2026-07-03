@@ -22,8 +22,13 @@ import {
   verifyAdminToken,
   getSiteProfile,
   updateSiteProfile,
+  listChannelOverrides,
+  upsertChannelOverride,
+  deleteChannelOverride,
   type SiteProfile,
+  type ChannelOverride,
 } from "@/lib/admin.functions";
+import { channels as baseChannels } from "@/lib/channels";
 import { SiteHeader } from "@/components/SiteHeader";
 
 const TOKEN_KEY = "dtv_admin_token_v1";
