@@ -65,6 +65,33 @@ export type Database = {
         }
         Relationships: []
       }
+      channel_stream_overrides: {
+        Row: {
+          channel_id: string
+          created_at: string
+          embed_url: string | null
+          streams: Json
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          embed_url?: string | null
+          streams?: Json
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          embed_url?: string | null
+          streams?: Json
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_profile: {
         Row: {
           avatar_url: string | null
