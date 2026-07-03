@@ -243,3 +243,105 @@ export const updateSiteProfile = createServerFn({ method: "POST" })
       social_links: (row.social_links as Record<string, string>) ?? {},
     };
   });
+
+// =====================================================
+// Channel stream overrides — admin-managed source swaps
+// =====================================================
+
+export interface ChannelOverride {
+  channel_id: string;
+  streams: string[];
+  type: "hls" | "iframe";
+  embed_url: string | null;
+  updated_at: string;
+}
+
+// Public: list all overrides so the player can merge them into the catalog.
+export const listChannelOverrides = createServerFn({ method: "GET" }).handler(
+  async (): Promise<ChannelOverride[]> => {
+    const supabase = createClient<Database>(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_PUBLISHABLE_KEY!,
+      { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
+    );
+    const { data, error } = await supabase
+      .from("channel_stream_overrides")
+      .select("channel_id, streams, type, embed_url, updated_at");
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((r) => ({
+      channel_id: r.channel_id,
+      streams: Array.isArray(r.streams) ? (r.streams as string[]) : [],
+      type: (r.type as "hls" | "iframe") ?? "hls",
+      embed_url: r.embed_url ?? null,
+      updated_at: r.updated_at,
+    }));
+  },
+);
+
+const OverrideInput = z.object({
+  channel_id: z.string().trim().min(1).max(120),
+  streams: z.array(z.string().trim().url().max(1000)).max(50).default([]),
+  type: z.enum(["hls", "iframe"]).default("hls"),
+  embed_url: z
+    .string()
+    .trim()
+    .max(1000)
+    .url()
+    .or(z.literal(""))
+    .nullable()
+    .transform((v) => (v ? v : null))
+    .optional(),
+});
+
+// Admin: upsert an override for a channel.
+export const upsertChannelOverride = createServerFn({ method: "POST" })
+  .inputValidator((d: { token: string; override: unknown }) =>
+    z.object({ token: z.string().min(10).max(200), override: OverrideInput }).parse(d),
+  )
+  .handler(async ({ data }): Promise<ChannelOverride> => {
+    if (!(await verifyToken(data.token))) throw new Error("Unauthorized.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("channel_stream_overrides")
+      .upsert(
+        {
+          channel_id: data.override.channel_id,
+          streams: data.override.streams,
+          type: data.override.type,
+          embed_url: data.override.embed_url ?? null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "channel_id" },
+      )
+      .select("channel_id, streams, type, embed_url, updated_at")
+      .single();
+    if (error) throw new Error(error.message);
+    return {
+      channel_id: row.channel_id,
+      streams: (row.streams as string[]) ?? [],
+      type: (row.type as "hls" | "iframe") ?? "hls",
+      embed_url: row.embed_url ?? null,
+      updated_at: row.updated_at,
+    };
+  });
+
+// Admin: remove an override, restoring the default catalog streams.
+export const deleteChannelOverride = createServerFn({ method: "POST" })
+  .inputValidator((d: { token: string; channel_id: string }) =>
+    z
+      .object({
+        token: z.string().min(10).max(200),
+        channel_id: z.string().trim().min(1).max(120),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data }): Promise<{ ok: true }> => {
+    if (!(await verifyToken(data.token))) throw new Error("Unauthorized.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("channel_stream_overrides")
+      .delete()
+      .eq("channel_id", data.channel_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
