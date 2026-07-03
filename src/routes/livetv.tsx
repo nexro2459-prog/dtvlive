@@ -32,12 +32,18 @@ export const Route = createFileRoute("/livetv")({
 function Home() {
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState<string>("All");
-  const [currentId, setCurrentId] = useState<string>(channels[0].id);
+  const [currentId, setCurrentId] = useState<string>(baseChannels[0].id);
   const [serverIdx, setServerIdx] = useState(0);
   const { favs, isFav, toggle } = useFavorites();
   const embeds = useChannelEmbeds();
+  const { overrides } = useChannelOverrides();
   const [showEmbedInput, setShowEmbedInput] = useState(false);
   const [embedDraft, setEmbedDraft] = useState("");
+
+  const channels = useMemo(
+    () => applyOverrides(baseChannels, overrides),
+    [overrides],
+  );
 
   const filtered = useMemo(() => {
     return channels.filter((c) => {
@@ -50,7 +56,7 @@ function Home() {
             : c.category === cat;
       return matchSearch && matchCat;
     });
-  }, [search, cat, favs]);
+  }, [channels, search, cat, favs]);
 
   const current = channels.find((c) => c.id === currentId) ?? channels[0];
 
