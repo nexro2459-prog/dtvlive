@@ -142,7 +142,7 @@ export async function fetchAnimeList(opts: ListOptions = {}): Promise<ListResult
   // Build the query dynamically so unused variables don't get declared.
 
   const dynamicQuery = `
-    query ($page: Int, $perPage: Int, $search: String${genre && genre !== "All" ? ", $genre: String" : ""}, $sort: [MediaSort]${type === "movie" ? ", $format: MediaFormat" : ""}${type === "series" ? ", $formatNot: MediaFormat" : ""}) {
+    query ($page: Int, $perPage: Int${search ? ", $search: String" : ""}${genre && genre !== "All" ? ", $genre: String" : ""}, $sort: [MediaSort]${type === "movie" ? ", $format: MediaFormat" : ""}${type === "series" ? ", $formatNot: MediaFormat" : ""}) {
       Page(page: $page, perPage: $perPage) {
         pageInfo { hasNextPage total }
         media(
