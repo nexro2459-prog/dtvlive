@@ -171,7 +171,6 @@ export function VideoPlayer({
               }
               video.play().catch(() => {});
             }
-          } catch {}
             if (video.readyState < 3) onPlaybackIssue?.("buffering");
           } catch {}
         }, 4500);
@@ -232,6 +231,8 @@ export function VideoPlayer({
       }
       video.removeEventListener("loadeddata", onLoaded);
       video.removeEventListener("canplay", onLoaded);
+      video.removeEventListener("waiting", onWaiting);
+      video.removeEventListener("playing", onPlaying);
     };
   }, [src, retryKey, isIframe, onPlaybackIssue, onPlaybackReady]);
 
