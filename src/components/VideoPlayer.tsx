@@ -90,6 +90,8 @@ export function VideoPlayer({
     setAutoActiveHeight(null);
 
     let hls: Hls | null = null;
+    let onWaiting: (() => void) | null = null;
+    let onPlaying: (() => void) | null = null;
 
     const onLoaded = () => {
       setLoading(false);
@@ -158,7 +160,7 @@ export function VideoPlayer({
 
       // Auto-nudge past stalls during live playback
       let stallRecoverTimer: number | null = null;
-      const onWaiting = () => {
+      onWaiting = () => {
         if (stallRecoverTimer) window.clearTimeout(stallRecoverTimer);
         stallRecoverTimer = window.setTimeout(() => {
           // If still stalled, seek to live edge
@@ -175,7 +177,7 @@ export function VideoPlayer({
           } catch {}
         }, 4500);
       };
-      const onPlaying = () => {
+      onPlaying = () => {
         if (stallRecoverTimer) {
           window.clearTimeout(stallRecoverTimer);
           stallRecoverTimer = null;
@@ -231,8 +233,8 @@ export function VideoPlayer({
       }
       video.removeEventListener("loadeddata", onLoaded);
       video.removeEventListener("canplay", onLoaded);
-      video.removeEventListener("waiting", onWaiting);
-      video.removeEventListener("playing", onPlaying);
+      if (onWaiting) video.removeEventListener("waiting", onWaiting);
+      if (onPlaying) video.removeEventListener("playing", onPlaying);
     };
   }, [src, retryKey, isIframe, onPlaybackIssue, onPlaybackReady]);
 
