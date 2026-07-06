@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { channels as baseChannels, categories } from "@/lib/channels";
 import { EMBED_SERVERS, buildEmbedUrl, useChannelEmbeds } from "@/lib/embeds";
 import { useChannelOverrides, applyOverrides } from "@/lib/channel-overrides";
@@ -39,6 +39,9 @@ function Home() {
   const { overrides } = useChannelOverrides();
   const [showEmbedInput, setShowEmbedInput] = useState(false);
   const [embedDraft, setEmbedDraft] = useState("");
+  const [autoSwitching, setAutoSwitching] = useState(true);
+  const sourceScores = useRef<Record<string, number>>({});
+  const lastSwitchAt = useRef(0);
 
   const channels = useMemo(
     () => applyOverrides(baseChannels, overrides),
@@ -82,6 +85,7 @@ function Home() {
 
   const safeIdx = Math.min(serverIdx, servers.length - 1);
   const currentServer = servers[safeIdx];
+  const sourceKey = `${current.id}:${currentServer?.url ?? ""}`;
 
   const tabs = ["All", ...categories.filter((c) => c !== "All"), "Favorites"];
 
@@ -92,6 +96,67 @@ function Home() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
+
+  const markSourceReady = useCallback(() => {
+    if (!currentServer) return;
+    sourceScores.current[sourceKey] = (sourceScores.current[sourceKey] ?? 0) + 2;
+  }, [currentServer, sourceKey]);
+
+  const switchToBestSource = useCallback(
+    (reason: string) => {
+      if (!autoSwitching || servers.length < 2) return;
+      const now = Date.now();
+      if (now - lastSwitchAt.current < 3500) return;
+      lastSwitchAt.current = now;
+
+      if (currentServer) {
+        sourceScores.current[sourceKey] = (sourceScores.current[sourceKey] ?? 0) - 6;
+      }
+
+      const next = servers
+        .map((server, index) => ({
+          index,
+          score:
+            (sourceScores.current[`${current.id}:${server.url}`] ?? 0) +
+            (server.type === "hls" ? 3 : 0) +
+            (index === safeIdx ? -10 : 0) +
+            (current.name.toLowerCase().includes("fifa") || current.name.toLowerCase().includes("world cup")
+              ? index < current.streams.length
+                ? 4
+                : 0
+              : 0),
+        }))
+        .sort((a, b) => b.score - a.score)[0];
+
+      if (next && next.index !== safeIdx) setServerIdx(next.index);
+      console.info(`Auto-switched TV source after ${reason}`);
+    },
+    [autoSwitching, current, currentServer, safeIdx, servers, sourceKey],
+  );
+
+  useEffect(() => {
+    if (!autoSwitching || !currentServer || currentServer.type !== "hls") return;
+    const controller = new AbortController();
+    const started = performance.now();
+    fetch(currentServer.url, {
+      method: "GET",
+      cache: "no-store",
+      signal: controller.signal,
+    })
+      .then((response) => {
+        const latency = performance.now() - started;
+        sourceScores.current[sourceKey] =
+          (sourceScores.current[sourceKey] ?? 0) + (response.ok ? 2 : -5) + (latency < 2500 ? 1 : -1);
+      })
+      .catch(() => {
+        sourceScores.current[sourceKey] = (sourceScores.current[sourceKey] ?? 0) - 3;
+      });
+    const timeout = window.setTimeout(() => controller.abort(), 5000);
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [autoSwitching, currentServer, sourceKey]);
 
   return (
     <div className="min-h-screen">
@@ -105,6 +170,8 @@ function Home() {
               src={currentServer.url}
               poster={current.logo}
               type={currentServer.type}
+              onPlaybackReady={markSourceReady}
+              onPlaybackIssue={switchToBestSource}
             />
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -137,6 +204,16 @@ function Home() {
                 Change Server
               </p>
               <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setAutoSwitching((value) => !value)}
+                  className={`rounded-lg border px-4 py-1.5 text-xs font-medium transition ${
+                    autoSwitching
+                      ? "border-transparent bg-emerald-500/90 text-white"
+                      : "border-border bg-card/60 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Auto source {autoSwitching ? "On" : "Off"}
+                </button>
                 {servers.map((s, i) => {
                   const active = i === safeIdx;
                   return (
