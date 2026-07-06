@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
@@ -11,11 +12,14 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import {
-  embedServers,
   fetchAnimeById,
   fetchAnimeList,
   type AnimeItem,
 } from "@/lib/anime";
+import {
+  resolveAnimePlaybackSources,
+  type AnimePlaybackSources,
+} from "@/lib/anime-sources.functions";
 
 export const Route = createFileRoute("/anime/$id")({
   loader: async ({ params }) => {
@@ -65,14 +69,45 @@ function AnimeDetail() {
   const [serverIdx, setServerIdx] = useState(0);
   const [reloadKey, setReloadKey] = useState(0);
   const [related, setRelated] = useState<AnimeItem[]>([]);
+  const [playback, setPlayback] = useState<AnimePlaybackSources | null>(null);
+  const [playbackLoading, setPlaybackLoading] = useState(true);
+  const [playbackError, setPlaybackError] = useState<string | null>(null);
+  const resolvePlayback = useServerFn(resolveAnimePlaybackSources);
 
-  const totalEps = item.episodes && item.episodes > 0 ? item.episodes : 1;
   const isMovie = item.type === "movie";
-  const servers = useMemo(
-    () => embedServers(item, isMovie ? 1 : episode, dub),
-    [item, episode, dub, isMovie],
-  );
-  const activeServer = servers[Math.min(serverIdx, servers.length - 1)];
+  const sourceEpisodes = playback?.episodes ?? [];
+  const totalEps = sourceEpisodes.length || (item.episodes && item.episodes > 0 ? item.episodes : 1);
+  const servers = playback?.servers ?? [];
+  const activeServer = servers[Math.min(serverIdx, Math.max(servers.length - 1, 0))];
+
+  useEffect(() => {
+    let cancelled = false;
+    setPlaybackLoading(true);
+    setPlaybackError(null);
+    resolvePlayback({
+      data: {
+        title: item.title,
+        romaji: item.romaji,
+        episode: isMovie ? 1 : episode,
+        dub,
+      },
+    })
+      .then((result) => {
+        if (cancelled) return;
+        setPlayback(result);
+        setServerIdx(0);
+        setReloadKey((key) => key + 1);
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        setPlayback(null);
+        setPlaybackError(error.message || "Could not load playable anime servers.");
+      })
+      .finally(() => !cancelled && setPlaybackLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [resolvePlayback, item.title, item.romaji, episode, dub, isMovie]);
 
   useEffect(() => {
     let cancelled = false;
@@ -89,10 +124,10 @@ function AnimeDetail() {
     };
   }, [item.id, item.genres]);
 
-  const episodes = useMemo(
-    () => Array.from({ length: totalEps }, (_, i) => i + 1),
-    [totalEps],
-  );
+  const episodes = useMemo(() => {
+    if (sourceEpisodes.length) return sourceEpisodes.map((ep) => ep.number);
+    return Array.from({ length: totalEps }, (_, i) => i + 1);
+  }, [sourceEpisodes, totalEps]);
 
   return (
     <div className="min-h-screen">
@@ -155,24 +190,34 @@ function AnimeDetail() {
           <div>
             <div className="relative overflow-hidden rounded-2xl border border-border bg-black shadow-[0_30px_80px_-30px_oklch(0.65_0.22_290/0.8)]">
               <div className="aspect-video w-full">
-                <iframe
-                  key={`${activeServer.id}-${episode}-${dub}-${reloadKey}`}
-                  src={activeServer.url}
-                  title={item.title}
-                  className="h-full w-full"
-                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                  allowFullScreen
-                  referrerPolicy="no-referrer"
-                />
+                {activeServer ? (
+                  <iframe
+                    key={`${activeServer.id}-${episode}-${dub}-${reloadKey}`}
+                    src={activeServer.url}
+                    title={item.title}
+                    className="h-full w-full"
+                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                    allowFullScreen
+                    referrerPolicy="origin"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-black px-4 text-center text-sm text-muted-foreground">
+                    {playbackLoading
+                      ? "Loading playable anime servers..."
+                      : playbackError || "No playable server is available for this episode."}
+                  </div>
+                )}
               </div>
-              <a
-                href={activeServer.url}
-                target="_blank"
-                rel="noreferrer"
-                className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur transition hover:bg-black/80"
-              >
-                <Maximize2 className="h-3 w-3" /> Full page
-              </a>
+              {activeServer ? (
+                <a
+                  href={activeServer.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur transition hover:bg-black/80"
+                >
+                  <Maximize2 className="h-3 w-3" /> Full page
+                </a>
+              ) : null}
             </div>
 
             {/* Server + controls */}
@@ -195,6 +240,11 @@ function AnimeDetail() {
               <div className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                 <Server className="h-3.5 w-3.5" />
                 <span className="mr-1">Server:</span>
+                {playbackLoading && (
+                  <span className="rounded-full border border-border bg-card/60 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+                    Resolving sources...
+                  </span>
+                )}
                 {servers.map((s, i) => {
                   const active = i === serverIdx;
                   return (
@@ -259,7 +309,10 @@ function AnimeDetail() {
                     return (
                       <button
                         key={n}
-                        onClick={() => setEpisode(n)}
+                          onClick={() => {
+                            setEpisode(n);
+                            setServerIdx(0);
+                          }}
                         className={`rounded-md py-1.5 text-[11px] font-semibold transition ${
                           active
                             ? "bg-gradient-to-r from-[oklch(0.65_0.22_290)] to-[oklch(0.7_0.18_220)] text-white shadow-[0_0_15px_oklch(0.7_0.2_290/0.5)]"
@@ -275,11 +328,14 @@ function AnimeDetail() {
             )}
 
             <p className="mt-3 text-xs text-muted-foreground">
-              Playing from{" "}
-              <span className="font-semibold text-foreground">
-                {activeServer.label}
-              </span>
-              . If it doesn't load or lags, switch to another server above.
+              {activeServer ? (
+                <>
+                  Playing from <span className="font-semibold text-foreground">{activeServer.label}</span>.
+                  If it doesn't load or lags, switch to another server above.
+                </>
+              ) : (
+                playbackError ?? "Preparing the best available stream source."
+              )}
             </p>
 
             {related.length > 0 && (
@@ -318,12 +374,12 @@ function AnimeDetail() {
 
             <div className="mt-6 text-right">
               <a
-                href={`https://anilist.co/anime/${item.anilistId}`}
+                href={playback?.watchUrl ?? `https://anilist.co/anime/${item.anilistId}`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
               >
-                View on AniList <ExternalLink className="h-3 w-3" />
+                Open source page <ExternalLink className="h-3 w-3" />
               </a>
             </div>
           </div>

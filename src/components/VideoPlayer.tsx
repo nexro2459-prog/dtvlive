@@ -21,6 +21,8 @@ interface Props {
   src: string;
   poster?: string;
   type?: "hls" | "iframe";
+  onPlaybackIssue?: (reason: string) => void;
+  onPlaybackReady?: () => void;
 }
 
 type QualityOption = { id: number; label: string; height: number; bitrate: number };
@@ -43,7 +45,13 @@ function qualityLabel(h: number) {
   return `${h}p`;
 }
 
-export function VideoPlayer({ src, poster, type = "hls" }: Props) {
+export function VideoPlayer({
+  src,
+  poster,
+  type = "hls",
+  onPlaybackIssue,
+  onPlaybackReady,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -82,10 +90,15 @@ export function VideoPlayer({ src, poster, type = "hls" }: Props) {
     setAutoActiveHeight(null);
 
     let hls: Hls | null = null;
+    let onWaiting: (() => void) | null = null;
+    let onPlaying: (() => void) | null = null;
 
-    const onLoaded = () => setLoading(false);
+    const onLoaded = () => {
+      setLoading(false);
+      onPlaybackReady?.();
+    };
 
-    if (Hls.isSupported() && src.includes(".m3u8")) {
+    if (Hls.isSupported()) {
       hls = new Hls({
         enableWorker: true,
         // Disable low-latency mode: live TV streams without LL-HLS tags
@@ -125,6 +138,7 @@ export function VideoPlayer({ src, poster, type = "hls" }: Props) {
 
       hls.on(Hls.Events.MANIFEST_PARSED, (_e, data) => {
         setLoading(false);
+        onPlaybackReady?.();
         const levels: Level[] = data.levels || [];
         const opts: QualityOption[] = levels
           .map((l, i) => ({
@@ -146,7 +160,7 @@ export function VideoPlayer({ src, poster, type = "hls" }: Props) {
 
       // Auto-nudge past stalls during live playback
       let stallRecoverTimer: number | null = null;
-      const onWaiting = () => {
+      onWaiting = () => {
         if (stallRecoverTimer) window.clearTimeout(stallRecoverTimer);
         stallRecoverTimer = window.setTimeout(() => {
           // If still stalled, seek to live edge
@@ -159,10 +173,11 @@ export function VideoPlayer({ src, poster, type = "hls" }: Props) {
               }
               video.play().catch(() => {});
             }
+            if (video.readyState < 3) onPlaybackIssue?.("buffering");
           } catch {}
-        }, 4000);
+        }, 4500);
       };
-      const onPlaying = () => {
+      onPlaying = () => {
         if (stallRecoverTimer) {
           window.clearTimeout(stallRecoverTimer);
           stallRecoverTimer = null;
@@ -177,6 +192,7 @@ export function VideoPlayer({ src, poster, type = "hls" }: Props) {
         if (!data.fatal) return;
         switch (data.type) {
           case Hls.ErrorTypes.NETWORK_ERROR:
+            onPlaybackIssue?.("network");
             if (networkRetries++ < 3) {
               setTimeout(() => hls!.startLoad(), 800);
             } else {
@@ -188,11 +204,13 @@ export function VideoPlayer({ src, poster, type = "hls" }: Props) {
             if (mediaRetries++ < 2) {
               hls!.recoverMediaError();
             } else {
+              onPlaybackIssue?.("media");
               setError("Playback error. Try another server.");
               setLoading(false);
             }
             break;
           default:
+            onPlaybackIssue?.("fatal");
             setError("Stream is currently offline. Try another server.");
             setLoading(false);
         }
@@ -201,6 +219,7 @@ export function VideoPlayer({ src, poster, type = "hls" }: Props) {
       video.src = src;
       video.addEventListener("loadeddata", onLoaded);
       video.addEventListener("error", () => {
+        onPlaybackIssue?.("video-error");
         setError("Stream is currently offline. Try another server.");
         setLoading(false);
       });
@@ -213,8 +232,11 @@ export function VideoPlayer({ src, poster, type = "hls" }: Props) {
         hlsRef.current = null;
       }
       video.removeEventListener("loadeddata", onLoaded);
+      video.removeEventListener("canplay", onLoaded);
+      if (onWaiting) video.removeEventListener("waiting", onWaiting);
+      if (onPlaying) video.removeEventListener("playing", onPlaying);
     };
-  }, [src, retryKey, isIframe]);
+  }, [src, retryKey, isIframe, onPlaybackIssue, onPlaybackReady]);
 
   // Iframe loading
   useEffect(() => {
@@ -355,7 +377,10 @@ export function VideoPlayer({ src, poster, type = "hls" }: Props) {
           allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
           allowFullScreen
           referrerPolicy="no-referrer"
-          onLoad={() => setLoading(false)}
+          onLoad={() => {
+            setLoading(false);
+            onPlaybackReady?.();
+          }}
         />
       ) : (
         <video
