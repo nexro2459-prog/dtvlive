@@ -192,10 +192,10 @@ export function VideoPlayer({
         if (!data.fatal) return;
         switch (data.type) {
           case Hls.ErrorTypes.NETWORK_ERROR:
+            onPlaybackIssue?.("network");
             if (networkRetries++ < 3) {
               setTimeout(() => hls!.startLoad(), 800);
             } else {
-              onPlaybackIssue?.("network");
               setError("Stream is currently offline. Try another server.");
               setLoading(false);
             }
