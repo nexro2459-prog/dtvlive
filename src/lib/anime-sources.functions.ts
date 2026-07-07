@@ -153,6 +153,14 @@ function parseEpisodes(html: string): AnimeEpisodeSource[] {
 }
 
 function parseServers(html: string, preferDub: boolean): AnimeStreamSource[] {
+  const sourcePriority = (url: string) => {
+    const host = url.toLowerCase();
+    if (host.includes("vidnest.fun")) return 0;
+    if (host.includes("tryembed")) return 1;
+    if (host.includes("megaplay")) return 2;
+    return 3;
+  };
+
   const matches = html.match(/<div\s+class=["']item server-item["'][^>]*>/gi) ?? [];
   const all = matches
     .map((tag, index) => {
@@ -170,8 +178,14 @@ function parseServers(html: string, preferDub: boolean): AnimeStreamSource[] {
     })
     .filter(Boolean) as AnimeStreamSource[];
 
-  const preferred = all.filter((server) => server.audio === (preferDub ? "dub" : "sub"));
-  const fallback = all.filter((server) => server.audio !== (preferDub ? "dub" : "sub"));
+  const byReliability = (a: AnimeStreamSource, b: AnimeStreamSource) =>
+    sourcePriority(a.url) - sourcePriority(b.url);
+  const preferred = all
+    .filter((server) => server.audio === (preferDub ? "dub" : "sub"))
+    .sort(byReliability);
+  const fallback = all
+    .filter((server) => server.audio !== (preferDub ? "dub" : "sub"))
+    .sort(byReliability);
   return [...preferred, ...fallback];
 }
 
