@@ -77,7 +77,19 @@ function AnimeDetail() {
   const isMovie = item.type === "movie";
   const sourceEpisodes = playback?.episodes ?? [];
   const totalEps = sourceEpisodes.length || (item.episodes && item.episodes > 0 ? item.episodes : 1);
-  const servers = playback?.servers ?? [];
+  const servers = useMemo(() => {
+    const sourcePriority = (url: string) => {
+      const host = url.toLowerCase();
+      if (host.includes("vidnest.fun")) return 0;
+      if (host.includes("tryembed")) return 1;
+      if (host.includes("megaplay")) return 2;
+      return 3;
+    };
+
+    return [...(playback?.servers ?? [])].sort(
+      (a, b) => sourcePriority(a.url) - sourcePriority(b.url),
+    );
+  }, [playback?.servers]);
   const activeServer = servers[Math.min(serverIdx, Math.max(servers.length - 1, 0))];
 
   useEffect(() => {

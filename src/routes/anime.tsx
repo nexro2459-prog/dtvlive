@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Search, Film, Tv2, Play, Loader2, ExternalLink } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -33,6 +33,14 @@ type TypeFilter = "all" | "series" | "movie";
 type SortKey = NonNullable<ListOptions["sort"]>;
 
 function AnimePage() {
+  const pathname = useLocation({ select: (location) => location.pathname });
+
+  if (pathname !== "/anime") return <Outlet />;
+
+  return <AnimeLibrary />;
+}
+
+function AnimeLibrary() {
   const [q, setQ] = useState("");
   const [genre, setGenre] = useState<string>("All");
   const [typeF, setTypeF] = useState<TypeFilter>("all");
@@ -64,7 +72,7 @@ function AnimePage() {
     setError(null);
     fetchAnimeList({
       page,
-      perPage: 30,
+      perPage: debouncedQ.trim() ? 48 : 30,
       search: debouncedQ,
       genre,
       type: typeF,
